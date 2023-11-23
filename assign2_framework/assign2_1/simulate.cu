@@ -40,7 +40,7 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
     }
     
     __syncthreads();
-    
+
     if (i == 0) {
         old = curr;
         curr = next;
@@ -55,9 +55,9 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     // init memory size of vectors
     double memSize = i_max * sizeof(double);
     // init devices
-    __shared__ double *deviceOld = NULL;
-    __shared__ double *deviceCurr = NULL;
-    __shared__ double *deviceNext = NULL;
+    double *deviceOld = NULL;
+    double *deviceCurr = NULL;
+    double *deviceNext = NULL;
     // allocate mem for devices
     check( cudaMalloc((void **) &deviceOld,  memSize) );
     check( cudaMalloc((void **) &deviceCurr, memSize) );
