@@ -76,7 +76,7 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     
     // retrieve result from device to CPU
     std::cout<<"\ngot to this point :)\n";
-    cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost);
+    check( cudaMemcpy(next_array, &deviceNext, memSize, cudaMemcpyDeviceToHost) );
 
     cudaFree(deviceOld);
     cudaFree(deviceCurr);
