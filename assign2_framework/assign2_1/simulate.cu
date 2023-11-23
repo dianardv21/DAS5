@@ -31,11 +31,9 @@ static void check(cudaError_t result) {
 __global__ void waveKernel(const long i_max, double *old, double *curr, double *next) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-
+    std::cout<<"hi";
     if (i < i_max) // if data is unevenly distributed, skip non-existing data
     next[i] = 2*curr[i] - old[i] + 0.15 * (curr[i-1] - (2*curr[i] - curr[i+1]));
-
-    __syncthreads();
 
 }
 
