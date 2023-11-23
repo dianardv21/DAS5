@@ -31,7 +31,7 @@ static void check(cudaError_t result) {
 __global__ void waveKernel(const long i_max, double *old, double *curr, double *next) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    std::cout<<"hi";
+
     if (i < i_max) // if data is unevenly distributed, skip non-existing data
     next[i] = 2*curr[i] - old[i] + 0.15 * (curr[i-1] - (2*curr[i] - curr[i+1]));
 
@@ -68,11 +68,12 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // calc wave function
         waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
         // swap buffers
-        
+        std::cout<<"\n";
 
     }
     
     // retrieve result from device to CPU
+    std::cout<<"got to this point :)";
     check( cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost) );
 
     cudaFree(deviceOld);
