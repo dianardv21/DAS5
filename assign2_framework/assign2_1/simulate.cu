@@ -72,7 +72,8 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // swap buffers
         //deviceOld = deviceCurr;
         //deviceCurr = deviceNext;
-
+        check( cudaMemcpy(deviceOld, deviceCurr, memSize, cudaMemcpyDeviceToDevice) );
+        check( cudaMemcpy(deviceCurr, deviceNext, memSize, cudaMemcpyDeviceToDevice) );
     }
     
     // retrieve result from device to CPU
