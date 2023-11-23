@@ -20,6 +20,8 @@ using namespace std;
  *     checkCudaCall(cudaGetLastError());
 **/
 
+__constant__ double c = 0.15;
+
 static void check(cudaError_t result) {
     if (result != cudaSuccess) {
         cerr << "cuda error: " << cudaGetErrorString(result) << endl;
@@ -33,11 +35,11 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i < i_max) // if data is unevenly distributed, skip non-existing data
-    next[i] = 2*curr[i] - old[i] + 0.15 * (curr[i-1] - (2*curr[i] - curr[i+1]));
+    next[i] = 2*curr[i] - old[i] + c * (curr[i-1] - (2*curr[i] - curr[i+1]));
 
 }
 
-__constant__ double c = 0.15;
+
 
 double *simulate(const long i_max, const long t_max, const long block_size,
                  double *old_array, double *current_array, double *next_array) {
