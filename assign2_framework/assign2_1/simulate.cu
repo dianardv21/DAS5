@@ -35,6 +35,12 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
     if (i < i_max) // if data is unevenly distributed, skip non-existing data
     next[i] = 2*curr[i] - old[i] + 0.15 * (curr[i-1] - (2*curr[i] - curr[i+1]));
 
+    __syncthreads();
+    if (i == i_max) {
+        int memSize = i_max * sizeof(double);
+        check( cudaMemcpy(old,  curr, memSize, cudaMemcpyDeviceToDevice) );
+        check( cudaMemcpy(curr, next, memSize, cudaMemcpyDeviceToDevice) );
+    }
 }
 
 __constant__ double c = 0.15;
@@ -68,8 +74,7 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // calc wave function
         waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
         // swap buffers
-        check( cudaMemcpy(deviceOld,  deviceCurr, memSize, cudaMemcpyDeviceToDevice) );
-        check( cudaMemcpy(deviceCurr, deviceNext, memSize, cudaMemcpyDeviceToDevice) );
+        
 
     }
     
