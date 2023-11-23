@@ -62,21 +62,20 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     int mod = i_max % block_size;
     if (mod != 0) mod = 1;
     int grid_size = i_max/block_size + mod;
-    printf("mod: %i,  grid_size: %i,  i_max: %i,  block_size: %i", mod, grid_size, i_max, block_size);
+    printf("mod: %i,  grid_size: %i,  i_max: %i,  block_size: %i \n", mod, grid_size, i_max, block_size);
+    
     // calculate wave function
-    //for (int t = 0; t < t_max; t++) {
-    //    
-    //    // calc wave function
-    //    waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
-    //    // swap buffers
-    //    //deviceOld = deviceCurr;
-    //    //deviceCurr = deviceNext;
-    //    check( cudaMemcpy(deviceOld, deviceCurr, memSize, cudaMemcpyDeviceToDevice) );
-    //    check( cudaMemcpy(deviceCurr, deviceNext, memSize, cudaMemcpyDeviceToDevice) );
-    //}
+    for (int t = 0; t < t_max; t++) {
+        
+        // calc wave function
+        waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
+        // swap buffers
+        deviceOld = deviceCurr;
+        deviceCurr = deviceNext;
+    }
     
     // retrieve result from device to CPU
-    std::cout<<"got to this point :)";
+    std::cout<<"\ngot to this point :)\n";
     check( cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost) );
 
     cudaFree(deviceOld);
