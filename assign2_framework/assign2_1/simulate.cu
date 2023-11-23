@@ -25,7 +25,6 @@ __constant__ double c = 0.15;
 static void check(cudaError_t result) {
     if (result != cudaSuccess) {
         cerr << "cuda error: " << cudaGetErrorString(result) << endl;
-        exit(EXIT_FAILURE);
     }
 }
 
