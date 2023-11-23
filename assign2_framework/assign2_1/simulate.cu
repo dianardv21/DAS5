@@ -68,15 +68,15 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     if (mod != 0) mod = 1;
     int grid_size = i_max/block_size + mod;
 
-    // calculate wave function
-    for (int t = 0; t < t_max; t++) {
-        
-        // calc wave function
-        waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
-        // swap buffers
-        
-
-    }
+    //// calculate wave function
+    //for (int t = 0; t < t_max; t++) {
+    //    
+    //    // calc wave function
+    //    waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
+    //    // swap buffers
+    //    
+//
+    //}
     
     // retrieve result from device to CPU
     check( cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost) );
