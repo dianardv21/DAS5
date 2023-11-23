@@ -62,7 +62,7 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     int mod = i_max % block_size;
     if (mod != 0) mod = 1;
     int grid_size = i_max/block_size + mod;
-
+    printf("mod: %i,  grid_size: %i,  i_max: %i,  block_size: %i", mod, grid_size, i_max, block_size);
     // calculate wave function
     //for (int t = 0; t < t_max; t++) {
     //    
@@ -77,9 +77,9 @@ double *simulate(const long i_max, const long t_max, const long block_size,
     
     // retrieve result from device to CPU
     std::cout<<"got to this point :)";
-    //check( cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost) );
+    check( cudaMemcpy(next_array, deviceNext, memSize, cudaMemcpyDeviceToHost) );
 
-    check (cudaFree(deviceOld) );
+    cudaFree(deviceOld);
     cudaFree(deviceCurr);
     cudaFree(deviceNext);
 
