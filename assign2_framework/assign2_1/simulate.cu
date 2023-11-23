@@ -44,7 +44,7 @@ double *simulate(const long i_max, const long t_max, const long block_size,
                  double *old_array, double *current_array, double *next_array) {
 
     // init memory size of vectors
-    int memSize = i_max * sizeof(double);
+    double memSize = i_max * sizeof(double);
     // init devices
     double *deviceOld = NULL;
     double *deviceCurr = NULL;
