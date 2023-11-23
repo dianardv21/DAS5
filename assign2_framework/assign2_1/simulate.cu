@@ -36,11 +36,7 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
     next[i] = 2*curr[i] - old[i] + 0.15 * (curr[i-1] - (2*curr[i] - curr[i+1]));
 
     __syncthreads();
-    if (i == i_max) {
-        int memSize = i_max * sizeof(double);
-        check( cudaMemcpy(old,  curr, memSize, cudaMemcpyDeviceToDevice) );
-        check( cudaMemcpy(curr, next, memSize, cudaMemcpyDeviceToDevice) );
-    }
+
 }
 
 __constant__ double c = 0.15;
