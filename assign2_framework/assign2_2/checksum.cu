@@ -40,8 +40,9 @@ static void checkCudaCall(cudaError_t result) {
  * The result should be written to the given result-integer, which is an
  * integer and NOT an array like deviceDataIn. */
  __global__ void checksumKernel(unsigned int* result, unsigned int *deviceDataIn){
-
-    // YOUR CODE HERE
+    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    atomicAdd(result, 1);
 
 }
 
