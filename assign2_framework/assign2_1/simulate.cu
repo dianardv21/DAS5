@@ -73,9 +73,9 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // calc wave function
         waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
         // swap buffers
-        double *temp = deviceNext;
-        deviceOld = deviceCurr;
-        deviceCurr = temp;
+        double *temp = deviceCurr;
+        deviceOld = temp;
+        deviceCurr = deviceNext;
         check ( cudaGetLastError() );
 
     }
