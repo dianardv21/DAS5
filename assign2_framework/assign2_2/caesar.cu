@@ -42,10 +42,17 @@ static void checkCudaCall(cudaError_t result) {
 __global__ void encryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < i_max) // don't calculate non-existing data points
+
+    int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]); // get size of input data
+
+    if (i < n) // don't calculate non-existing data points
     {
         deviceDataOut[i] = deviceDataIn[i]+*key;
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> bd91873176bf9b39fb68ccd26687fb5df1160f6b
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
@@ -53,7 +60,10 @@ __global__ void encryptKernel(char* deviceDataIn, int key_length, int *key, char
 __global__ void decryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < i_max) // don't calculate non-existing data points
+
+    int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]);
+
+    if (i < n) // don't calculate non-existing data points
     {
         deviceDataOut[i] = deviceDataIn[i]-*key;
     }
@@ -66,11 +76,11 @@ __global__ void decryptKernel(char* deviceDataIn, int key_length, int *key, char
  * speedups of your parallelized implementation. */
 int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 {
-  int i;
+  printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential encryption");
 
   sequentialTime.start();
-  for (i=0; i<n; i++) {
+  for (int i=0; i<n; i++) {
 
     data_out[i]= data_in[i] + *key;
 
@@ -89,11 +99,11 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
  * speedups of your parallelized implementation. */
 int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 {
-  int i;
+  printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential decryption");
 
   sequentialTime.start();
-  for (i=0; i<n; i++) {
+  for (int i=0; i<n; i++) {
 
     data_out[i]= data_in[i] - *key;
 
@@ -245,16 +255,16 @@ int main(int argc, char* argv[]) {
 
     EncryptSeq(n, data_in, data_out, key_length, enc_key);
     writeData(n, "sequential.data", data_out);
-    EncryptCuda(n, data_in, data_out, key_length, enc_key);
-    writeData(n, "cuda.data", data_out);
+    //EncryptCuda(n, data_in, data_out, key_length, enc_key);
+    //writeData(n, "cuda.data", data_out);
 
     readData("cuda.data", data_in);
 
     cout << "Decrypting a file of " << n << "characters" << endl;
     DecryptSeq(n, data_in, data_out, key_length, enc_key);
     writeData(n, "sequential_recovered.data", data_out);
-    DecryptCuda(n, data_in, data_out, key_length, enc_key);
-    writeData(n, "recovered.data", data_out);
+    //DecryptCuda(n, data_in, data_out, key_length, enc_key);
+    //writeData(n, "recovered.data", data_out);
 
     delete[] data_in;
     delete[] data_out;

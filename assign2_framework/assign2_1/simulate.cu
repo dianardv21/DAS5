@@ -39,7 +39,7 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
             next[i] = 2*curr[i] - old[i] + c * (curr[i-1] - (2*curr[i] - curr[i+1]));
         }
     }
-    
+
 }
 
 
@@ -73,10 +73,11 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // calc wave function
         waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
         // swap buffers
-        double *temp1 = deviceCurr;
-        double *temp2 = deviceNext;
-        deviceOld = temp1;
-        deviceCurr = temp2;
+        double *temp = deviceOld;
+        deviceOld = deviceCurr;
+        deviceCurr = deviceNext;
+        deviceNext = temp;
+
         check ( cudaGetLastError() );
 
     }
