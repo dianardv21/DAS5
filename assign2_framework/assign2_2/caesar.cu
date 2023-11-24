@@ -41,15 +41,23 @@ static void checkCudaCall(cudaError_t result) {
  * written to the given out data. */
 __global__ void encryptKernel(char* deviceDataIn, char* deviceDataOut) {
 
-    // YOUR CODE HERE
-
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < i_max) // don't calculate non-existing data points
+    {
+        deviceDataOut[i] = deviceDataIn[i]+1;
+    }
+R 
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
  * written to the given out data. */
 __global__ void decryptKernel(char* deviceDataIn, char* deviceDataOut) {
 
-    // YOUR CODE HERE
+    unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < i_max) // don't calculate non-existing data points
+    {
+        deviceDataOut[i] = deviceDataIn[i]-1;
+    }
 
 }
 
@@ -65,7 +73,7 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (i=0; i<n; i++) {
 
-    // YOUR CODE HERE
+    data_out[i]= data_in[i] + key_length;
 
   }
   sequentialTime.stop();
@@ -88,7 +96,7 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (i=0; i<n; i++) {
 
-    // YOUR CODE HERE
+    data_out[i]= data_in[i] - key_length;
 
   }
   sequentialTime.stop();
