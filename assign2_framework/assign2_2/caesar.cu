@@ -73,11 +73,11 @@ __global__ void decryptKernel(char* deviceDataIn, char* deviceDataOut) {
  * speedups of your parallelized implementation. */
 int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 {
-  int i;
+  printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential encryption");
 
   sequentialTime.start();
-  for (i=0; i<n; i++) {
+  for (int i=0; i<n; i++) {
 
     data_out[i]= data_in[i] + key_length;
 
@@ -96,11 +96,11 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
  * speedups of your parallelized implementation. */
 int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 {
-  int i;
+  printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential decryption");
 
   sequentialTime.start();
-  for (i=0; i<n; i++) {
+  for (int i=0; i<n; i++) {
 
     data_out[i]= data_in[i] - key_length;
 
@@ -135,7 +135,6 @@ int EncryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     timer kernelTime1 = timer("kernelTime");
     timer memoryTime = timer("memoryTime");
-    printf("%i", sizeof(data_in));
 
     // copy the original vectors to the GPU
     memoryTime.start();
@@ -253,16 +252,16 @@ int main(int argc, char* argv[]) {
 
     EncryptSeq(n, data_in, data_out, key_length, enc_key);
     writeData(n, "sequential.data", data_out);
-    EncryptCuda(n, data_in, data_out, key_length, enc_key);
-    writeData(n, "cuda.data", data_out);
+    //EncryptCuda(n, data_in, data_out, key_length, enc_key);
+    //writeData(n, "cuda.data", data_out);
 
     readData("cuda.data", data_in);
 
     cout << "Decrypting a file of " << n << "characters" << endl;
     DecryptSeq(n, data_in, data_out, key_length, enc_key);
     writeData(n, "sequential_recovered.data", data_out);
-    DecryptCuda(n, data_in, data_out, key_length, enc_key);
-    writeData(n, "recovered.data", data_out);
+    //DecryptCuda(n, data_in, data_out, key_length, enc_key);
+    //writeData(n, "recovered.data", data_out);
 
     delete[] data_in;
     delete[] data_out;
