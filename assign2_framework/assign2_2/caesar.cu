@@ -42,11 +42,14 @@ static void checkCudaCall(cudaError_t result) {
 __global__ void encryptKernel(char* deviceDataIn, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < i_max) // don't calculate non-existing data points
+
+    int n = sizeof(deviceDataIn); // get size of input data
+
+    if (i < n) // don't calculate non-existing data points
     {
         deviceDataOut[i] = deviceDataIn[i]+1;
     }
-R 
+    
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
@@ -54,7 +57,8 @@ R
 __global__ void decryptKernel(char* deviceDataIn, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < i_max) // don't calculate non-existing data points
+    int n = sizeof(deviceDataIn);
+    if (i < n) // don't calculate non-existing data points
     {
         deviceDataOut[i] = deviceDataIn[i]-1;
     }
@@ -129,6 +133,7 @@ int EncryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     timer kernelTime1 = timer("kernelTime");
     timer memoryTime = timer("memoryTime");
+    printf("%i", sizeof(data_in));
 
     // copy the original vectors to the GPU
     memoryTime.start();
