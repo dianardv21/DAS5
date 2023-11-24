@@ -25,6 +25,7 @@ __constant__ double c = 0.15;
 static void check(cudaError_t result) {
     if (result != cudaSuccess) {
         cerr << "cuda error: " << cudaGetErrorString(result) << endl;
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -33,8 +34,8 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < i_max-1) { // if data is unevenly distributed, skip non-existing data
-        if(i > 0) {
+    if (i < i_max-1) { // skip first element and non-existing data
+        if(i > 0) {    // skip last element
             next[i] = 2*curr[i] - old[i] + c * (curr[i-1] - (2*curr[i] - curr[i+1]));
         }
     }
@@ -62,9 +63,9 @@ double *simulate(const long i_max, const long t_max, const long block_size,
 
     // account for uneven distribution of threads
     int mod = i_max % block_size;
-    if (mod != 0) mod = 1;
-    int grid_size = (i_max)/block_size + mod;
-    printf("mod: %i,  grid_size: %i,  i_max: %i,  block_size: %i \n", mod, grid_size, i_max, block_size);
+    if (mod != 0) mod = 1; // add one block if there's a remainder
+    int grid_size = i_max/block_size + mod;
+    //printf("mod: %i,  grid_size: %i,  i_max: %i,  block_size: %i \n", mod, grid_size, i_max, block_size);
 
     // calculate wave function
     for (int t = 0; t < t_max; t++) {
@@ -72,8 +73,11 @@ double *simulate(const long i_max, const long t_max, const long block_size,
         // calc wave function
         waveKernel<<<grid_size, block_size>>>(i_max, deviceOld, deviceCurr, deviceNext);
         // swap buffers
+        double *temp = deviceNext;
         deviceOld = deviceCurr;
-        deviceCurr = deviceNext;
+        deviceCurr = temp;
+        check ( cudaGetLastError() );
+
     }
     
     // retrieve result from device to CPU
