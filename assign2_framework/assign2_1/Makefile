@@ -24,7 +24,7 @@ CU_PTX		= $(CU_SOURCES:%.cu=%.ptx)
 CC_OBJECTS	= $(CC_SOURCES:%.cc=%.o)
 
 # Arguments to run the file with (as i_max, t_max, block_size)
-RUNARGS = 100 1000 25
+RUNARGS = 1000000 1000 32
 
 
 
