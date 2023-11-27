@@ -42,17 +42,16 @@ static void checkCudaCall(cudaError_t result) {
 __global__ void encryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-
     int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]); // get size of input data
+
+    for (int j = 0; j<key_length; j++){
+        key[j] = key[j] % 256;
+    } //in case key cant be directly mapped to ASCII code
 
     if (i < n) // don't calculate non-existing data points
     {
-        deviceDataOut[i] = deviceDataIn[i]+*key;
+        deviceDataOut[i] = (deviceDataIn[i]+ key[i % key_length]) % 256;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> bd91873176bf9b39fb68ccd26687fb5df1160f6b
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
@@ -60,12 +59,11 @@ __global__ void encryptKernel(char* deviceDataIn, int key_length, int *key, char
 __global__ void decryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-
     int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]);
 
     if (i < n) // don't calculate non-existing data points
     {
-        deviceDataOut[i] = deviceDataIn[i]-*key;
+        deviceDataOut[i] = (deviceDataIn[i] - key[i % key_length]) % 256;
     }
 
 }
@@ -78,12 +76,9 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 {
   printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential encryption");
-
   sequentialTime.start();
   for (int i=0; i<n; i++) {
-
-    data_out[i]= data_in[i] + *key;
-
+    deviceDataOut[i] = (deviceDataIn[i]+ key[i % key_length]) % 256;
   }
   sequentialTime.stop();
 
@@ -105,7 +100,7 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (int i=0; i<n; i++) {
 
-    data_out[i]= data_in[i] - *key;
+  deviceDataOut[i] = (deviceDataIn[i] - key[i % key_length]) % 256;
 
   }
   sequentialTime.stop();
