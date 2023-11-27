@@ -79,7 +79,7 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (int i=0; i<n; i++) {
 
-    data_out[i]= data_in[i] + key_length;
+    data_out[i]= data_in[i] + 1;
 
   }
   sequentialTime.stop();
@@ -102,7 +102,7 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (int i=0; i<n; i++) {
 
-    data_out[i]= data_in[i] - key_length;
+    data_out[i] = data_in[i] - 1;
 
   }
   sequentialTime.stop();
