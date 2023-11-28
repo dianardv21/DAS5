@@ -57,9 +57,11 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
         key1 = *key % 256;
         tmp = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
         if (tmp < 32){
-            tmp =+ 32;
+            tmp = tmp + 32;
         }
         deviceDataOut[i] = tmp;
+        if (i == 0) {
+            printf("Index 0 processed successfully.\n");
     }
 }
 
@@ -96,11 +98,11 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   for (int i=0; i<n; i++) {
         tmp = (data_in[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
         if (tmp < 32){
-            tmp =+ 32;
+            tmp = tmp + 32;
         }
         data_out[i] = tmp;
     }
-  }
+
   sequentialTime.stop();
 
   cout << fixed << setprecision(6);
@@ -119,7 +121,7 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   timer sequentialTime = timer("Sequential decryption");
 
   sequentialTime.start();
-
+  int tmp;
   char key1 = *key % 256;
   for (int i=0; i<n; i++) {
         tmp = data_in[i] - key1;
