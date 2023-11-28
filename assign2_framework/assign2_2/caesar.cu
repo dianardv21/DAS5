@@ -39,27 +39,25 @@ static void checkCudaCall(cudaError_t result) {
 
 /* Change this kernel to properly encrypt the given data. The result should be
  * written to the given out data. */
-__global__ void encryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
+__global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]); // get size of input data
 
     for (int j = 0; j<key_length; j++){
         key[j] = key[j] % 256;
     } //in case key cant be directly mapped to ASCII code
 
     if (i < n) // don't calculate non-existing data points
-    {
+    {  
         deviceDataOut[i] = (deviceDataIn[i]+ key[i % key_length]) % 256;
     }
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
  * written to the given out data. */
-__global__ void decryptKernel(char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
+__global__ void decryptKernel(int n, char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    int n = sizeof(deviceDataIn) / sizeof(deviceDataIn[0]);
 
     if (i < n) // don't calculate non-existing data points
     {
@@ -141,7 +139,7 @@ int EncryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     // execute kernel
     kernelTime1.start();
-    encryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, key_length, key, deviceDataOut);
+    encryptKernel<<<n/threadBlockSize, threadBlockSize>>>(n, deviceDataIn, key_length, key, deviceDataOut);
     cudaDeviceSynchronize();
     kernelTime1.stop();
 
@@ -193,7 +191,7 @@ int DecryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     // execute kernel
     kernelTime1.start();
-    decryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, key_length, key, deviceDataOut);
+    decryptKernel<<<n/threadBlockSize, threadBlockSize>>>(n, deviceDataIn, key_length, key, deviceDataOut);
     cudaDeviceSynchronize();
     kernelTime1.stop();
 
@@ -232,7 +230,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < key_length; i++) {
         enc_key[i] = atoi(argv[i + 1]);
     }
-
+    
     // Check if the original.data file exists and what it's size is
     int n;
     n = fileSize("original.data");
