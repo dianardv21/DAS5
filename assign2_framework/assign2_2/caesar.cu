@@ -78,7 +78,7 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   timer sequentialTime = timer("Sequential encryption");
   sequentialTime.start();
   for (int i=0; i<n; i++) {
-    deviceDataOut[i] = (deviceDataIn[i]+ key[i % key_length]) % 256;
+    data_out[i] = (data_in[i]+ key[i % key_length]) % 256;
   }
   sequentialTime.stop();
 
@@ -100,7 +100,7 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   sequentialTime.start();
   for (int i=0; i<n; i++) {
 
-  deviceDataOut[i] = (deviceDataIn[i] - key[i % key_length]) % 256;
+  data_out[i] = (data_in[i] - key[i % key_length]) % 256;
 
   }
   sequentialTime.stop();
@@ -141,7 +141,7 @@ int EncryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     // execute kernel
     kernelTime1.start();
-    encryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, deviceDataOut);
+    encryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, key_length, key, deviceDataOut);
     cudaDeviceSynchronize();
     kernelTime1.stop();
 
@@ -193,7 +193,7 @@ int DecryptCuda (int n, char* data_in, char* data_out, int key_length, int *key)
 
     // execute kernel
     kernelTime1.start();
-    decryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, deviceDataOut);
+    decryptKernel<<<n/threadBlockSize, threadBlockSize>>>(deviceDataIn, key_length, key, deviceDataOut);
     cudaDeviceSynchronize();
     kernelTime1.stop();
 
