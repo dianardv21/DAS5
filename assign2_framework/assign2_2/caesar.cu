@@ -94,11 +94,11 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   char key1 = *key % 256;
   int tmp;
   for (int i=0; i<n; i++) {
-        tmp = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
+        tmp = (data_in[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
         if (tmp < 32){
             tmp =+ 32;
         }
-        deviceDataOut[i] = tmp;
+        data_out[i] = tmp;
     }
   }
   sequentialTime.stop();
@@ -122,10 +122,10 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
 
   char key1 = *key % 256;
   for (int i=0; i<n; i++) {
-        tmp = deviceDataIn[i] - key1;
+        tmp = data_in[i] - key1;
         if(tmp<32)
             tmp = 126 - tmp;
-        deviceDataOut[i] = tmp;
+        data_out[i] = tmp;
   }
   sequentialTime.stop();
 
@@ -272,16 +272,16 @@ int main(int argc, char* argv[]) {
 
     cout << "Encrypting a file of " << n << " characters." << endl;
     printf("\nlength: %i,   key: %i\n",key_length, enc_key);
-    //EncryptSeq(n, data_in, data_out, key_length, enc_key);
-    //writeData(n, "sequential.data", data_out);
+    EncryptSeq(n, data_in, data_out, key_length, enc_key);
+    writeData(n, "sequential.data", data_out);
     EncryptCuda(n, data_in, data_out, key_length, enc_key);
     writeData(n, "cuda.data", data_out);
 
     readData("cuda.data", data_in);
 
     cout << "Decrypting a file of " << n << "characters" << endl;
-    //DecryptSeq(n, data_in, data_out, key_length, enc_key);
-    //writeData(n, "sequential_recovered.data", data_out);
+    DecryptSeq(n, data_in, data_out, key_length, enc_key);
+    writeData(n, "sequential_recovered.data", data_out);
     DecryptCuda(n, data_in, data_out, key_length, enc_key);
     writeData(n, "recovered.data", data_out);
 
