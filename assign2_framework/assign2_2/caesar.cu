@@ -43,6 +43,7 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
     char key1;
+    int tmp;
     // ASCII printable characters have character code 32-127, so for the purpose of sending a message, we will make sure
     // that we only use these codes for our conversion
 
@@ -54,24 +55,28 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
     if (i < n) // don't calculate non-existing data points
     {  
         key1 = *key % 256;
-        char init_code = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
-        if ((init_code) < 32){
-            int tmp = init_code + 32;
-            init_code = tmp;
+        tmp = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
+        if (tmp < 32){
+            tmp =+ 32;
         }
-        deviceDataOut[i] = init_code;
+        deviceDataOut[i] = tmp;
     }
 }
 
 /* Change this kernel to properly decrypt the given data. The result should be
  * written to the given out data. */
 __global__ void decryptKernel(int n, char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
-
+    int tmp;
+    char key1;
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-    char key1 = *key%256;
+
     if (i < n) // don't calculate non-existing data points
     {
-        deviceDataOut[i] = (deviceDataIn[i] - *key) % 126;
+        char key1 = *key % 256;
+        tmp = deviceDataIn[i] - key1;
+        if(tmp<32)
+            tmp = 126 - tmp;
+        deviceDataOut[i] = tmp;
     }
 
 }
@@ -85,8 +90,16 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   printf("\nn: %i    keylength: %i   key: %i\n\n", n,key_length, key);
   timer sequentialTime = timer("Sequential encryption");
   sequentialTime.start();
+
+  char key1 = *key % 256;
+  int tmp;
   for (int i=0; i<n; i++) {
-    data_out[i] = (data_in[i] - 256 + key[i % key_length]) % 256 + 256;
+        tmp = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
+        if (tmp < 32){
+            tmp =+ 32;
+        }
+        deviceDataOut[i] = tmp;
+    }
   }
   sequentialTime.stop();
 
@@ -106,10 +119,13 @@ int DecryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   timer sequentialTime = timer("Sequential decryption");
 
   sequentialTime.start();
+
+  char key1 = *key % 256;
   for (int i=0; i<n; i++) {
-
-  data_out[i] = (data_in[i] - key[i % key_length]) % 256;
-
+        tmp = deviceDataIn[i] - key1;
+        if(tmp<32)
+            tmp = 126 - tmp;
+        deviceDataOut[i] = tmp;
   }
   sequentialTime.stop();
 
