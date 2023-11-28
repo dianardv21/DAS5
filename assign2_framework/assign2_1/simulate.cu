@@ -34,8 +34,8 @@ __global__ void waveKernel(const long i_max, double *old, double *curr, double *
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (i < i_max-1) { // skip first element and non-existing data
-        if(i > 0) {    // skip last element
+    if (i < i_max-1) { // skip last element or non-existing data
+        if(i > 0) {    // skip first element
             next[i] = 2*curr[i] - old[i] + c * (curr[i-1] - (2*curr[i] - curr[i+1]));
         }
     }

@@ -42,6 +42,7 @@ static void checkCudaCall(cudaError_t result) {
  __global__ void checksumKernel(unsigned int* result, unsigned int *deviceDataIn){
     
     int i = blockIdx.x * blockDim.x + threadIdx.x;
+    
     atomicAdd(result, 1);
 
 }
