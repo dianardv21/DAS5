@@ -247,7 +247,7 @@ int main(int argc, char* argv[]) {
     readData("original.data", data_in);
 
     cout << "Encrypting a file of " << n << " characters." << endl;
-
+    printf("\n\nlength: %i,   key: %i\n",key_length, enc_key);
     //EncryptSeq(n, data_in, data_out, key_length, enc_key);
     //writeData(n, "sequential.data", data_out);
     EncryptCuda(n, data_in, data_out, key_length, enc_key);
