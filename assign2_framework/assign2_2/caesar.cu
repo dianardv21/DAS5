@@ -52,7 +52,7 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
     key1 = *key % 256;
     if (i < n) // don't calculate non-existing data points
     {  
-        deviceDataOut[i] = (deviceDataIn[i] + key1);
+        deviceDataOut[i] = (deviceDataIn[i] + key1)%126;
     }
 }
 
@@ -61,10 +61,10 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
 __global__ void decryptKernel(int n, char* deviceDataIn, int key_length, int *key, char* deviceDataOut) {
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
-
+    char key1 = *key%256;
     if (i < n) // don't calculate non-existing data points
     {
-        deviceDataOut[i] = (deviceDataIn[i] - *key) % 256;
+        deviceDataOut[i] = (deviceDataIn[i] - *key) % 126;
     }
 
 }
