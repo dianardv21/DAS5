@@ -51,7 +51,7 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
     //*key = *key % 256;
     if (i < n) // don't calculate non-existing data points
     {  
-        deviceDataOut[i] = deviceDataIn[i]// + *key) % 256;
+        deviceDataOut[i] = (char)((deviceDataIn[i] + *key) % 256);
     }
 }
 
