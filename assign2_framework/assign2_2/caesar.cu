@@ -51,7 +51,7 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
     //*key = *key % 256;
     if (i < n) // don't calculate non-existing data points
     {  
-        deviceDataOut[i] = (char)((deviceDataIn[i] + *key) % 256);
+        deviceDataOut[i] = (deviceDataIn[i] - 256 + *key) % 256 + 256;
     }
 }
 
@@ -78,7 +78,7 @@ int EncryptSeq (int n, char* data_in, char* data_out, int key_length, int *key)
   timer sequentialTime = timer("Sequential encryption");
   sequentialTime.start();
   for (int i=0; i<n; i++) {
-    data_out[i] = (data_in[i]+ key[i % key_length]) % 256;
+    data_out[i] = (data_in[i] - 256 + key[i % key_length]) % 256 + 256;
   }
   sequentialTime.stop();
 
