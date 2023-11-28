@@ -43,16 +43,23 @@ __global__ void encryptKernel(int n, char* deviceDataIn, int key_length, int *ke
 
     unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
     char key1;
+    // ASCII printable characters have character code 32-127, so for the purpose of sending a message, we will make sure
+    // that we only use these codes for our conversion
 
     // for (int j = 0; j<key_length; j++){
     //     key1[j] = key[j] % 256;
     // } //in case key cant be directly mapped to ASCII code
 
 
-    key1 = *key % 256;
     if (i < n) // don't calculate non-existing data points
     {  
-        deviceDataOut[i] = (deviceDataIn[i] + key1)%126;
+        key1 = *key % 256;
+        char init_code = (deviceDataIn[i] + key1) % 126; // Code before checking if it's a valid printable ASCII code
+        if ((init_code) < 32){
+            int tmp = init_code + 32;
+            init_code = tmp;
+        }
+        deviceDataOut[i] = init_code;
     }
 }
 
