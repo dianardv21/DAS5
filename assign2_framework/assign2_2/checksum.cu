@@ -54,13 +54,17 @@ unsigned int checksumSeq (int n, unsigned int* data_in) {
     timer sequentialTime = timer("Sequential checksum");
 
     sequentialTime.start();
-    for (i=0; i<n; i++) {}
+    int result = 0;
+    for (i=0; i<n; i++) {
+        result++;
+    }
+    printf("%d\n", result);
     sequentialTime.stop();
 
     cout << fixed << setprecision(6);
     cout << "Checksum (sequential): \t\t" << sequentialTime.getElapsed() << " seconds." << endl;
 
-    return 0;
+    return result;
 }
 
 /**
