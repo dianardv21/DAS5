@@ -20,6 +20,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int numprocs, rank;
     double c = 0.15;
 
+    typedef struct MPI_STATUS {
+        int MPI_TAG;
+        int MPI_ERROR;
+        int MPI_SOURCE;
+    }
+
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -32,13 +38,15 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
         // send/recv halo cells, 
         double left, right;
+        MPI_STATUS status;
+
         if (rank != numprocs-1) {
-            MPI_Isend(current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD); // get start from next as end+1
+            MPI_Isend((void*)current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, *status); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &status); // get start from next as end+1
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
-            MPI_Isend(current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD); // get end from previous as start-1
+            MPI_Isend((void*)current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, *status); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &status); // get end from previous as start-1
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
@@ -62,11 +70,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
 
     
-    //typedef struct MPI_STATUS {
-    //    int MPI_TAG;
-    //    int MPI_ERROR;
-    //    int MPI_SOURCE;
-    //}
+
 
     // MPI_ANY_TAG
     // sync block: MPI_Ssend - nonblock: MPI_ISsend
