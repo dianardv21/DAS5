@@ -33,12 +33,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         // send/recv halo cells, 
         double left, right;
         if (rank != numprocs-1) {
-            MPI_ISend(current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
-            MPI_IRecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD); // get start from next as end+1
+            MPI_Isend(current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD); // get start from next as end+1
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
-            MPI_ISend(current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
-            MPI_IRecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD); // get end from previous as start-1
+            MPI_Isend(current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD); // get end from previous as start-1
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
