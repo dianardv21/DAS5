@@ -53,9 +53,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
         }
-        printf("yeet");
+        
         MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
-        printf("yeet");
         // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
@@ -65,7 +64,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
-
+        if (t==998) printf("yeet");
     }
     
     if(rank == 0) {
