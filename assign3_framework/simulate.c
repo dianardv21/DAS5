@@ -88,9 +88,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if(rank != 0) {
         // send all arrays to master process
         MPI_Send(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);//, &reqs[4]);
-        for(int i = 0;i<i_max-1;i++){
-            printf("\n%f\n", current_array[i]);
-        }
     }
     else {
         for (int i = 1; i < numprocs; i++) {
