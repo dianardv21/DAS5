@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpi.h>
 #include "mpi.h"
 #include "simulate.h"
 
@@ -19,12 +18,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 {   
     int numprocs, rank;
     double c = 0.15;
-
-    typedef struct MPI_STATUS {
-        int MPI_TAG;
-        int MPI_ERROR;
-        int MPI_SOURCE;
-    };
+    double left, right; // halos
+    // handles for comms
+    MPI_Request reqs[4];
+    MPI_Status stats[4];
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
@@ -37,16 +34,14 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     for(int t = 0; t < t_max; t++) {
 
         // send/recv halo cells, 
-        double left, right;
-        MPI_STATUS status;
-
+        
         if (rank != numprocs-1) {
-            MPI_Isend((void*)current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, *status); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &status); // get start from next as end+1
+            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[2]); // get start from next as end+1
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
-            MPI_Isend((void*)current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, *status); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &status); // get end from previous as start-1
+            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[1]); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
@@ -57,6 +52,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
         // TODO: Make this MPI_Wait with request instead of barrier
         MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Waitall(4, reqs, stats);
+
         // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
@@ -66,6 +63,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
+
+    }
+
+    if(rank == 0) {
+        // receive all data chunks
 
     }
 
