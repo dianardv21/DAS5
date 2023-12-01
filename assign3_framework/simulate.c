@@ -24,6 +24,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // TODO: determine data partitioning
+    int start = 1, end = 998;
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
