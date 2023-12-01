@@ -86,7 +86,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     if(rank != 0) {
         // send all current_arrays to master process
-        MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+        MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         for(int j = 0; j<i_max; j++) {
             printf("\n%f", current_array[j]);
         }
@@ -98,7 +98,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             start = edges[i][0];
             end = edges[i][1];
             printf("\nstart: %i, end: %i, rank: %i\n", start, end, rank);
-            MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
+            MPI_Recv(buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
             memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
         }
     }
