@@ -19,6 +19,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
+
     // handles for comms
     MPI_Request reqs[4];
     MPI_Status stats[4];
@@ -68,7 +69,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     if(rank == 0) {
         // receive all data chunks
-
+        printf("yeet");
     }
 
     
