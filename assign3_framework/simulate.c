@@ -83,36 +83,28 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array = temp;
     }
 
-    for(int i = 0; i<i_max; i++){
-        printf("\n%f", current_array[i]);
-    }
-    
 
     if(rank != 0) {
         // send all current_arrays to master process
         MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
     }
     else {
-        double *buffer_array; // buffer to store received array domains
-        for (int i = 1; i < numprocs; i++) {
-            // for each non-master process get domain and copy only its domain to current_array
-            start = edges[i][0];
-            end = edges[i][1];
-            printf("\nstart: %i, end: %i, rank: %i\n", start, end, rank);
-            MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
-            memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
+        if (numprocs > 1) { // no comms needed without additional processes
+            double *buffer_array; // buffer to store received array domains
+            for (int i = 1; i < numprocs; i++) {
+                // for each non-master process get domain and copy only its domain to current_array
+                start = edges[i][0];
+                end = edges[i][1];
+                printf("\nstart: %i, end: %i, rank: %i\n", start, end, rank);
+
+                // receive current_array from other processes
+                MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
+
+                // copy relevant part of buffer to relevant part of current_array
+                memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
+            }
         }
     }
-
-    //for(int i = 0;i<i_max-1;i++){
-    //    printf("\n%f\n", current_array[i]);
-    //}
-    // MPI_ANY_TAG
-    // sync block: MPI_Ssend - nonblock: MPI_ISsend
-    // buffered block: MPI_Bsend - nonblock: MPI_IBsend
-    // ready mode block: MPI_Rsend - nonblock: MPI_IRsend
-    // MPI_Recv receives any send mode messages
-    // MPI_Barrier(comm) for all processes
 
     MPI_Finalize();
 
