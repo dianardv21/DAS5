@@ -19,6 +19,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
+    int req_count = 0;
 
     // handles for comms
     MPI_Request reqs[4];
@@ -28,20 +29,22 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // TODO: determine data partitioning
+    // Now using whole array because default uses 1 node 1 process
     int start = 1, end = 998;
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
 
         // send/recv halo cells, 
-        
         if (rank != numprocs-1) {
             MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
             MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
+            req_count += 2;
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
             MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
             MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
+            req_count += 2;
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
@@ -50,9 +53,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
         }
-        // TODO: Make this MPI_Wait with request instead of barrier
-        MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Waitall(4, reqs, MPI_STATUS_IGNORE);
+        
+        MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
 
         // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
