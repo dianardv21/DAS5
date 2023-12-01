@@ -30,7 +30,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     // TODO: determine data partitioning
     // Now using whole array because default uses 1 node 1 process
-    int start = 1, end = 998;
+    int start = 1, end = 98;
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
@@ -64,7 +64,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
-        if (t==998) printf("yeet");
+        if (t==997) printf("yeet");
     }
     
     if(rank == 0) {
