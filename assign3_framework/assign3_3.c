@@ -25,9 +25,31 @@
 // an efficient implementation of your function on an (imaginary) ring network topology
 // (circularly) increasing and decreasing MPI process ids. 
 
+// -> prbably non roots have to wait first until the receive and then send
+// -> smth to check if msg was sent? if there was space for the buffer? or maybe not cuz we dont create
+// the buffer inside the function, we just pass it from main
+// -> IDEA!!: root passes msg to both prev and next nodes => find index where we stop sending
+
 int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm communicator){
+    MPI_Request reqs[size???];   // required variable for non-blocking calls
+    MPI_Status stats[4];
 
+    //Finding the left and right neighbours:
+    prev = rank-1;
+    next = rank+1;
+    if (rank == 0)
+        prev = size??? - 1; // i dont have size
+    if (rank ==  (size - 1))
+        next = 0;
 
+    // Sending the messages:
+    if (rank == root){
+        MPI_Isend(&buffer, count, datatype, next, tag1, communicator, &);
+
+    }
+    else if (rank != ){
+        MPI_Recv
+    }
 }
 
 
@@ -41,15 +63,6 @@ main(int argc, char *argv[]){
     }
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-
-    //Finding the left and right neighbours:
-    prev = rank-1;
-    next = rank+1;
-    if (rank == 0)
-        prev = size - 1;
-    if (rank ==  (size - 1))
-        next = 0;
 
 
 
