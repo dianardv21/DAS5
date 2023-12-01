@@ -24,7 +24,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         int MPI_TAG;
         int MPI_ERROR;
         int MPI_SOURCE;
-    }
+    };
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
