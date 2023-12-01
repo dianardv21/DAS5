@@ -88,21 +88,25 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if(rank != 0) {
         // send all arrays to master process
         MPI_Send(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);//, &reqs[4]);
-
+        for(int i = 0;i<i_max-1;i++){
+            printf("\n%f\n", current_array[i]);
+        }
     }
     else {
         for (int i = 1; i < numprocs; i++) {
             // for each non-master process get domain and copy only the domain to current_array
+            
             start = edges[i][0];
             end = edges[i][1];
+            printf("start: %i, end: %i, rank: %i", start, end, rank);
             MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
             memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
         }
     }
 
-    for(int i = 0;i<i_max-1;i++){
-        printf("\n%f\n", current_array[i]);
-    }
+    //for(int i = 0;i<i_max-1;i++){
+    //    printf("\n%f\n", current_array[i]);
+    //}
     // MPI_ANY_TAG
     // sync block: MPI_Ssend - nonblock: MPI_ISsend
     // buffered block: MPI_Bsend - nonblock: MPI_IBsend
