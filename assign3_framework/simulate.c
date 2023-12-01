@@ -28,13 +28,25 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // TODO: determine data partitioning
-    // Now using whole array because default uses 1 node 1 process
-    int start = 1, end = 98;
-
+    // partition for start-end indices
+    int start = 1, end;
+    int jump = i_max / numprocs;
+    int mod = i_max % numprocs;
+    int edges[numprocs][2];
+    for (int k = 0; k < numprocs; k++) {
+        end = start + (jump - 1) + mod;
+        edges[k][0] = start;
+        edges[k][1] = end;
+        start = end + 1;
+        mod = 0;
+    }
+    printf("%i", edges);
+    // determine process domain
+    start = edges[rank][0];
+    end = edges[rank][1];
     // start iterations
     for(int t = 0; t < t_max; t++) {
-
+        
         // send/recv halo cells, 
         if (rank != numprocs-1) {
             MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
@@ -54,8 +66,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
         }
         
+        // wait for comms and compute halo cells
         MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
-        // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
@@ -64,7 +76,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
-        if (t==997) printf("yeet");
     }
     
     if(rank == 0) {
