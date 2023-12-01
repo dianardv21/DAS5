@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include "mpi.h"
 #include "simulate.h"
 
 
@@ -50,7 +51,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         MPI_Barrier(MPI_COMM_WORLD);
         // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1](2*current_array[end]-right));
+        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
         // swap locally
         double *temp = old_array;
