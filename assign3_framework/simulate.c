@@ -44,7 +44,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // determine process domain
     start = edges[rank][0];
     end = edges[rank][1];
-    printf(\n"%i %i\n", start, end);
+    if(rank == numprocs-1) end = end - 2;
+    printf("\n%i %i\n", start, end);
     // start iterations
     for(int t = 0; t < t_max; t++) {
         
