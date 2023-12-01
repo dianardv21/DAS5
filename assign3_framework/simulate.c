@@ -42,10 +42,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // determine process domain
+    edges[numprocs-1][1] -= 2;
     start = edges[rank][0];
     end = edges[rank][1];
-    if(rank == numprocs-1) end = end - 2;
+    //if(rank == numprocs-1) end = end - 2;
     printf("\n%i %i\n", start, end);
+
     // start iterations
     for(int t = 0; t < t_max; t++) {
         
@@ -80,13 +82,22 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array = temp;
     }
     
-    if(rank == 0) {
-        // receive all data chunks
-        printf("yeet");
+
+    double buffer_array;
+    if(rank != 0) {
+        // send all arrays to master process
+        MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
+
     }
-
-    
-
+    else {
+        for (int i = 1; i < numprocs; i++) {
+            // for each non-master process get domain and copy only the domain to current_array
+            start = edges[i][0];
+            end = edges[i][1];
+            MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD);
+            memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
+        }
+    }
 
     // MPI_ANY_TAG
     // sync block: MPI_Ssend - nonblock: MPI_ISsend
