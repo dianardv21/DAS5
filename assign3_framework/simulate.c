@@ -87,7 +87,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     double *buffer_array;
     if(rank != 0) {
         // send all arrays to master process
-        MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+        MPI_Send(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
 
     }
     else {
@@ -100,7 +100,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
     }
 
-    for(int i =0;i<i_max;i++){
+    for(int i = 0;i<i_max-1;i++){
         printf("\n%f\n", current_array[i]);
     }
     // MPI_ANY_TAG
