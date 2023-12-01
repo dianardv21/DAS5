@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "simulate.h"
 #include <mpi.h>
-
+#include <string.h>
 
 /* Add any global variables you may need. */
 
