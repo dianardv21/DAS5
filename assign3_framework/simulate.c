@@ -24,9 +24,16 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     MPI_Request reqs[4];
     MPI_Status stats[4];
 
+    typedef struct MPI_Status {
+        int MPI_TAG;
+        int MPI_SOURCE;
+        int MPI_ERROR
+    };
+
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Status status;
 
     // TODO: determine data partitioning
     int start = 1, end = 998;
@@ -37,12 +44,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         // send/recv halo cells, 
         
         if (rank != numprocs-1) {
-            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[2]); // get start from next as end+1
+            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &status); // get start from next as end+1
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
-            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[1]); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
+            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &status); // get end from previous as start-1
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
@@ -53,7 +60,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
         // TODO: Make this MPI_Wait with request instead of barrier
         MPI_Barrier(MPI_COMM_WORLD);
-        MPI_Waitall(4, reqs, stats);
+        //MPI_Waitall(4, reqs, stats);
 
         // handle halo cells
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
