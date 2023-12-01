@@ -22,7 +22,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int req_count = 0;
 
     // handles for comms
-    MPI_Request reqs[4];
+    MPI_Request reqs[6];
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
@@ -86,7 +86,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     double buffer_array;
     if(rank != 0) {
         // send all arrays to master process
-        MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
+        MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[5]);
 
     }
     else {
@@ -94,7 +94,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             // for each non-master process get domain and copy only the domain to current_array
             start = edges[i][0];
             end = edges[i][1];
-            MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD);
+            MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &reqs[6]);
             memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
         }
     }
