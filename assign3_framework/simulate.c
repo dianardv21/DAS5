@@ -176,7 +176,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     end = edges[rank][1];
 
     current_array[start] = 15;
-    current_array[end] = 9;
+    current_array[end] = 9;   
 
     for (int i=0;i<i_max;i++){
         printf("BEFORECurr: %f  r: %i  i: %i  \n", current_array[i], rank, i);
@@ -185,15 +185,16 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     printf("\ns: %i -- e: %i\n", start, end);
     
     // send/recv halo cells, 
-    if (rank != numprocs-1) {
+    if (rank != numprocs-1) { // for leftmost process
         MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
         MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
-        req_count += 2;
+        req_count += 2*(numprocs-2);
     } else {right = 0;} // edge of array is always 0
-    if(rank != 0) {
+
+    if (rank != 0) { // for rightmost process
         MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
         MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
-        req_count += 2;
+        req_count += 2*(numprocs-2);
     } else {left = 0;} // edge of array is always 0
     
     // let computation run during communication
