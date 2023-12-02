@@ -184,7 +184,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
 
     printf("\ns: %i -- e: %i\n", start, end);
-        
+    current_array[start] = 15;
+    current_array[end] = 9;
     // send/recv halo cells, 
     if (rank != numprocs-1) {
         MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
@@ -221,10 +222,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         for (int i=0;i<i_max;i++){
         printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
     }}
-    if(rank == 0){
-        for (int i=0;i<i_max;i++){
-        printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }}
+    //if(rank == 0){
+    //    for (int i=0;i<i_max;i++){
+    //    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    //}}
 
     
 
