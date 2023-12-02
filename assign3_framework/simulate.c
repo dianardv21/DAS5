@@ -16,19 +16,24 @@
 double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
+    // handles for comms
+    MPI_Request reqs[6];
+    MPI_Status stats[6];
+    
+    MPI_Init(NULL,NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    // initialize some stuff
     int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
     int req_count = 0;
 
-    // handles for comms
-    MPI_Request reqs[6];
-    MPI_Status stats[6];
-
-    MPI_Init(NULL,NULL);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    // make pointer arrays local to process
+    double *old[i_max], *curr[i_max], *next[i_max];
+    memcpy(old, old_array, i_max*sizeof(double));
+    memcpy(curr, current_array, i_max*sizeof(double));
 
     // partition for start-end indices
     int start = 1, end;
@@ -55,12 +60,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         
         // send/recv halo cells, 
         if (rank != numprocs-1) {
-            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
+            MPI_Isend(curr[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
             MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
             req_count += 2*(numprocs-2);
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
-            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
+            MPI_Isend(curr[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
             MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
             req_count += 2*(numprocs-2);
         } else {left = 0;} // edge of array is always 0
@@ -68,14 +73,14 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         // let computation run during communication
         for(int i = start+1; i < end; i++) {
             
-            next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
+            next[i] = 2*curr[i]-old[i]+c*(curr[i-1]-(2*curr[i]-curr[i+1]));
 
         }
         
         // wait for comms and compute halo cells
         MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
-        next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
+        next[start] = 2*curr[start]-old[start]+c*(left-(2*curr[start]-curr[start+1]));
+        next[end] = 2*curr[end]-old[end]+c*(curr[end-1]-(2*curr[end]-right));
         
         //for (int i=0;i<i_max;i++){
         //    printf("%f  r: %i  i: %i  \n", current_array[i], rank, i);
@@ -83,16 +88,16 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         //printf("\n\n Proc: %i   t: %i \n", rank, t);
 
         // swap locally
-        double *temp = old_array;
-        old_array = current_array;
-        current_array = next_array;
-        next_array = temp;
+        double *temp = old;
+        old = curr;
+        curr = next;
+        next = temp;
 
     }
 
     printf("\n\n Proc: %i \n", rank);
     for (int i=0;i<i_max;i++){
-    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    printf("CURR: %f  r: %i  i: %i  \n", curr[i], rank, i);
     }
    
 
@@ -102,9 +107,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         if(rank != 0) {
             // send all current_arrays to master process
             double send_array[i_max];
-            memcpy(send_array, current_array, i_max*sizeof(double));
+            memcpy(send_array, curr, i_max*sizeof(double));
             for (int j = 0; j<i_max;j++){
-                    printf("send: %f, curr: %f\n", send_array[j], current_array[j]);
+                    printf("send: %f, curr: %f\n", send_array[j], curr[j]);
             }
             MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
@@ -119,7 +124,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 // receive current_array from other processes
                 MPI_Recv(buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
                 for (int j = 0; j<i_max;j++){
-                    printf("curr: %f, buff: %f\n", current_array[j],buffer_array[j]);
+                    printf("curr: %f, buff: %f\n", curr[j],buffer_array[j]);
                 }
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
