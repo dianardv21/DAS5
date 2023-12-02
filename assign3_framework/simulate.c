@@ -15,7 +15,10 @@
  */
 double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
-{   
+{      
+    for (int i=0;i<i_max;i++){
+            printf("%f  r: %i  i: %i  \n", current_array[i], i);
+    }
     int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
