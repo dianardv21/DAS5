@@ -144,8 +144,8 @@ MPI_Finalize();
 
 
 
-double *simulate(const int i_max, const int t_max, double *old_array,
-        double *current_array, double *next_array)
+double *simulate(const int i_max, const int t_max, double *old_arra,
+        double *current_arra, double *next_arra)
 {    
 
     int numprocs, rank;
@@ -173,7 +173,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         start = end + 1;
         mod = 0;
     }
-    
+    double *old_array = {1,2,3,4,5,6,7,8,9,10};
+    double *current_array = {1,2,3,4,5,6,7,8,9,10};
+    double *next_array = {1,2,3,4,5,6,7,8,9,10};
 
     // determine process domain
     edges[numprocs-1][1] -= 2;
