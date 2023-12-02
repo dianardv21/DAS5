@@ -130,9 +130,10 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
-        return current_array;
-        MPI_Finalize();
+        
     }
 
+return current_array;
+MPI_Finalize();
     
 }
