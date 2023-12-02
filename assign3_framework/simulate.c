@@ -79,7 +79,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         for (int i=0;i<i_max;i++){
             printf("%f\n", current_array[i]);
         }
-
+        printf("\n\n Yeet\n");
+        
         // swap locally
         double *temp = old_array;
         old_array = current_array;
