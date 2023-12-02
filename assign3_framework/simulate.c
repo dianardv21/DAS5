@@ -177,6 +177,12 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
     double curr[10] = {1,2,3,4,5,6,7,8,9,10};
     double next[10] = {1,2,3,4,5,6,7,8,9,10};
 
+    double *old_array, *current_array, *next_array;
+
+    old_array = malloc(i_max * sizeof(double));
+    current_array = malloc(i_max * sizeof(double));
+    next_array = malloc(i_max * sizeof(double));
+
     double *old_array = &old;
     double *current_array = &curr;
     double *next_array = &next;
