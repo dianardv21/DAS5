@@ -48,8 +48,6 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
     edges[numprocs-1][1] -= 2;
     start = edges[rank][0];
     end = edges[rank][1];
-    //if(rank == numprocs-1) end = end - 2;
-    printf("\n%i %i\n", start, end);
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
@@ -57,12 +55,12 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         // send/recv halo cells, 
         if (rank != numprocs-1) {
             MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
+            MPI_Recv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
             req_count += 2*(numprocs-2);
         } else {right = 0;} // edge of array is always 0
         if(rank != 0) {
             MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
+            MPI_Recv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
             req_count += 2*(numprocs-2);
         } else {left = 0;} // edge of array is always 0
         
@@ -77,18 +75,14 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
-        
-        if(rank == 1){
-        for (int i=0;i<i_max;i++){
-        printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }
-        }
 
         // swap locally
         double *temp = old_array;
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
+
+        // receive always turns the value to 0.000000, y?
 
     }
     
