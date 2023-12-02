@@ -152,6 +152,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int numprocs, rank;
     double c = 0.15;
     double *left, *right; // halos
+    left = malloc(sizeof(double));
+    right = malloc(sizeof(double));
     int req_count = 0;
 
     // handles for comms
