@@ -144,8 +144,8 @@ MPI_Finalize();
 
 
 
-double *simulate(const int i_max, const int t_max, double *old_arra,
-        double *current_arra, double *next_arra)
+double *simulate(const int i_max, const int t_max, double *old_array,
+        double *current_array, double *next_array)
 {    
 
     int numprocs, rank;
@@ -173,24 +173,15 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
         start = end + 1;
         mod = 0;
     }
-    double old[10] = {1,2,3,4,5,6,7,8,9,10};
-    double curr[10] = {1,2,3,4,5,6,7,8,9,10};
-    double next[10] = {1,2,3,4,5,6,7,8,9,10};
-
-    double *old_array, *current_array, *next_array;
-
-    old_array = malloc(i_max * sizeof(double));
-    current_array = malloc(i_max * sizeof(double));
-    next_array = malloc(i_max * sizeof(double));
-
-    double *old_array = &old;
-    double *current_array = &curr;
-    double *next_array = &next;
 
     // determine process domain
     edges[numprocs-1][1] -= 2;
     start = edges[rank][0];
     end = edges[rank][1];
+
+    for (int i=0;i<i_max;i++){
+        printf("BEFORECurr: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    }
 
     printf("\ns: %i -- e: %i\n", start, end);
         
