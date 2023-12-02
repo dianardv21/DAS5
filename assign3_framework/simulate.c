@@ -140,15 +140,16 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
-    int req_count = 0;
-
-    // handles for comms
-    MPI_Request reqs[50];
-    MPI_Status stats[50];
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // handles for comms
+    int req = 4;
+    if(rank == 0 || rank == numprocs-1) {req = 2}
+    MPI_Request reqs[5];
+    MPI_Status stats[5];
 
     // partition for start-end indices
     int start = 1, end;
@@ -170,19 +171,23 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     current_array[start] = 15;
     current_array[end] = 9;   
-
+    
 
     printf("\ns: %i -- e: %i, r:%i\n", start, end, rank);
     
     // send/recv halo cells, 
     if (rank != numprocs-1) { // exclude rightmost process
         MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
+        req_count++;
         MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
+        req_count++;
     } else {right = 0;} // edge of array is always 0
 
     if (rank != 0) { // exclude leftmost process
         MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
+        req_count++;
         MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
+        req_count++;
     } else {left = 0;} // edge of array is always 0
     
     // let computation run during communication
@@ -193,10 +198,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // wait for comms and compute halo cells
-    req_count = 4;
-    if (rank == 0 || rank == numprocs-1) {req_count = 2;}
+    //req_count = 4;
+    //if (rank == 0 || rank == numprocs-1) {req_count = 2;}
 
-    MPI_Waitall(req_count, reqs, stats);
+    MPI_Waitall(req, reqs, stats);
     printf("\nrank:%i, left:%f, right:%f, req:%i\n",rank, left, right, req_count);
 
     next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
