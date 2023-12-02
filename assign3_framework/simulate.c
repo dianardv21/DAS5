@@ -143,8 +143,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int req_count = 0;
 
     // handles for comms
-    MPI_Request reqs[4];
-    MPI_Status stats[4];
+    MPI_Request reqs[50];
+    MPI_Status stats[50];
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
