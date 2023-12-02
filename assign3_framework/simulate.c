@@ -100,6 +100,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             // send all current_arrays to master process
             double send_array[i_max];
             memcpy(send_array, current_array, i_max*sizeof(double));
+            for (int j = 0; j<i_max;j++){
+                    printf("%f\n", send_array[i]);
+                }
             MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
