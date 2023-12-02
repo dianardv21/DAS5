@@ -31,7 +31,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     int req_count = 0;
 
     // make pointer arrays local to process
-    double *old[i_max], *curr[i_max], *next[i_max];
+    double *old, *curr, *next;
     memcpy(old, old_array, i_max*sizeof(double));
     memcpy(curr, current_array, i_max*sizeof(double));
 
