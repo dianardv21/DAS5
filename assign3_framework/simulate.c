@@ -13,8 +13,8 @@
  * current_array: array of size i_max filled with data for t
  * next_array: array of size i_max. You should fill this with t+1
  */
-double *simulate(const int i_max, const int t_max, double *old_arra,
-        double *current_arra, double *next_arra)
+double *simulate1(const int i_max, const int t_max, double *old_array,
+        double *current_array, double *next_array)
 {    
 
     int numprocs, rank;
@@ -42,10 +42,6 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
         start = end + 1;
         mod = 0;
     }
-
-    double *current_array = current_arra;
-    double *old_array = old_arra;
-    double *next_array = next_arra;
     
     // determine process domain
     edges[numprocs-1][1] -= 2;
@@ -135,5 +131,89 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
 
 return current_array;
 MPI_Finalize();
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+double *simulate(const int i_max, const int t_max, double *old_array,
+        double *current_array, double *next_array)
+{    
+
+    int numprocs, rank;
+    double c = 0.15;
+    double left, right; // halos
+    int req_count = 0;
+
+    // handles for comms
+    MPI_Request reqs[6];
+    MPI_Status stats[6];
+
+    MPI_Init(NULL,NULL);
+    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // partition for start-end indices
+    int start = 1, end;
+    int jump = i_max / numprocs;
+    int mod = i_max % numprocs;
+    int edges[numprocs][2];
+    for (int k = 0; k < numprocs; k++) {
+        end = start + (jump - 1) + mod;
+        edges[k][0] = start;
+        edges[k][1] = end;
+        start = end + 1;
+        mod = 0;
+    }
+    
+
+    // determine process domain
+    edges[numprocs-1][1] -= 2;
+    start = edges[rank][0];
+    end = edges[rank][1];
+        
+    // send/recv halo cells, 
+    if (rank != numprocs-1) {
+        MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
+        MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
+        req_count += 2*(numprocs-2);
+        printf("%f", right);
+    } else {right = 0;} // edge of array is always 0
+    if(rank != 0) {
+        MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
+        MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
+        req_count += 2*(numprocs-2);
+        printf("%f", left);
+    } else {left = 0;} // edge of array is always 0
+    
+    // let computation run during communication
+    for(int i = start+1; i < end; i++) {
+        
+        next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
+
+    }
+    
+    // wait for comms and compute halo cells
+    MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
+    next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
+    next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
+    
+    if(rank == 1){
+        for (int i=0;i<i_max;i++){
+        printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    }}
+
+    printf("s: %i -- e: %i", start, end);
+
+MPI_Finalize();
+return current_array;
     
 }
