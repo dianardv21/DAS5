@@ -77,10 +77,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
-        for (int i=0;i<i_max;i++){
-            printf("%f  r: %i  i: %i  \n", current_array[i], rank, i);
-        }
-        printf("\n\n Proc: %i   t: %i \n", rank, t);
+        //for (int i=0;i<i_max;i++){
+        //    printf("%f  r: %i  i: %i  \n", current_array[i], rank, i);
+        //}
+        //printf("\n\n Proc: %i   t: %i \n", rank, t);
 
         // swap locally
         double *temp = old_array;
@@ -90,6 +90,13 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     }
 
+    printf("\n\n Proc: %i \n", rank);
+    for (int i=0;i<i_max;i++){
+    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    }
+   
+
+
 
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
@@ -97,7 +104,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             double send_array[i_max];
             memcpy(send_array, current_array, i_max*sizeof(double));
             for (int j = 0; j<i_max;j++){
-                    printf("send: %f\n", send_array[j]);
+                    printf("send: %f, curr: %f\n", send_array[j], current_array[j]);
             }
             MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
