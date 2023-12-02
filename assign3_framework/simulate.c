@@ -188,13 +188,13 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if (rank != numprocs-1) { // for leftmost process
         MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
         MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
-        req_count += 2*(numprocs-2);
+        req_count += 2;
     } else {right = 0;} // edge of array is always 0
 
     if (rank != 0) { // for rightmost process
         MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
         MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
-        req_count += 2*(numprocs-2);
+        req_count += 2;
     } else {left = 0;} // edge of array is always 0
     
     // let computation run during communication
@@ -205,6 +205,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // wait for comms and compute halo cells
+    printf("\ncount: %i, rank: %i\n", req_count, rank);
     MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
     if (rank != 0) {
         printf("\nSent start: %f to %i\nRank %i, left: %f, right: %f\n ", current_array[start],rank-1,rank,left,right); }
