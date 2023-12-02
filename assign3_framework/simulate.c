@@ -98,7 +98,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send all current_arrays to master process
-            MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+            double send_array[i_max];
+            memcpy(send_array, current_array, i_max*sizeof(double));
+            MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
             double *buffer_array = malloc(i_max*sizeof(double)); // buffer to store received array domains
