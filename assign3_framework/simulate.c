@@ -163,11 +163,13 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     // partition for start-end indices
     int start = 1, end;
-    int jump = i_max / numprocs;
-    int mod = i_max % numprocs;
+    int jump = (i_max-2) / numprocs;
+    int mod = (i_max-2) % numprocs;
     int edges[numprocs][2];
+
     for (int k = 0; k < numprocs; k++) {
-        end = start + (jump - 1) + mod;
+        end = start + jump - 1;
+        if (mod) {end++; mod--;}
         edges[k][0] = start;
         edges[k][1] = end;
         start = end + 1;
@@ -227,10 +229,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         for (int i=0;i<i_max;i++){
         printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
     }}
-    //if(rank == 0){
-    //    for (int i=0;i<i_max;i++){
-    //    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    //}}
+    if(rank == 0){
+        for (int i=0;i<i_max;i++){
+        printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    }}
 
     
 
