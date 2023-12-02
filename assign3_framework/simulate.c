@@ -173,9 +173,13 @@ double *simulate(const int i_max, const int t_max, double *old_arra,
         start = end + 1;
         mod = 0;
     }
-    double *old_array = {1,2,3,4,5,6,7,8,9,10};
-    double *current_array = {1,2,3,4,5,6,7,8,9,10};
-    double *next_array = {1,2,3,4,5,6,7,8,9,10};
+    double old = {1,2,3,4,5,6,7,8,9,10};
+    double curr = {1,2,3,4,5,6,7,8,9,10};
+    double next = {1,2,3,4,5,6,7,8,9,10};
+
+    double *old_array = &old;
+    double *current_array = &curr;
+    double *next_array = &next;
 
     // determine process domain
     edges[numprocs-1][1] -= 2;
