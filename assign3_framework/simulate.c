@@ -76,26 +76,32 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
+        for (int i=0;i<i_max;i++){
+            printf("%f\n", current_array[i]);
+        }
+        
         // swap locally
         double *temp = old_array;
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
+
     }
 
 
-    if(rank != 0) {
-        // send all current_arrays to master process
-        MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
-    }
-    else {
-        if (numprocs > 1) { // no comms needed without additional processes
+
+    if (numprocs > 1) { // no comms necessary if only one process
+        if(rank != 0) {
+            // send all current_arrays to master process
+            MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+        }
+        else {
             double *buffer_array; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
-                printf("\nstart: %i, end: %i, rank: %i\n", start, end, rank);
+                printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
 
                 // receive current_array from other processes
                 MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
