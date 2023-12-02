@@ -111,7 +111,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
 
                 // copy relevant part of buffer to relevant part of current_array
-                memcpy(current_array + start, buffer_array + start, (end-start)*sizeof(double));
+                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
     }
