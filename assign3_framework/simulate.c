@@ -165,7 +165,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
 
     // determine process domain
-    edges[numprocs-1][1] -= 2;
     start = edges[rank][0];
     end = edges[rank][1];
 
