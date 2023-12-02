@@ -91,7 +91,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     printf("\n\n\n");
     for (int i=0;i<i_max;i++){
-            printf("%f\n", current_array[i]);
+            printf("%f  r: %i  i: %i\n", current_array[i], rank, i);
     }
 
     if (numprocs > 1) { // no comms necessary if only one process
