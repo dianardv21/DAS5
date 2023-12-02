@@ -203,9 +203,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // wait for comms and compute halo cells
+    req_count = 2*numprocs - 2;
     printf("\ncount: %i, rank: %i\n", req_count, rank);
-    req_count = 4*numprocs - 4;
     MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
+
     if (rank != 0) {
         printf("\nSent start: %f to %i\nRank %i, left: %f, right: %f\n ", current_array[start],rank-1,rank,left,right); }
     if (rank != numprocs-1) {
