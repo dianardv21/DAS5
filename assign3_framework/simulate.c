@@ -110,7 +110,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 
                 // receive current_array from other processes
                 MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
-                for (int i = 0; i<i_max;i++){
+                for (int j = 0; j<i_max;j++){
                     printf("%f\n", buffer_array[i]);
                 }
                 // copy relevant part of buffer to relevant part of current_array
