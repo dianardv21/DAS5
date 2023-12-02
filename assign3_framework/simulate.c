@@ -85,13 +85,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         // receive always turns the value t0 0.000000
 
     }
-    
-    printf("\n\n Proc: %i \n", rank);
-    for (int i=0;i<i_max;i++){
-    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }
    
-
 
 
     if (numprocs > 1) { // no comms necessary if only one process
@@ -178,11 +172,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     current_array[start] = 15;
     current_array[end] = 9;   
 
-    for (int i=0;i<i_max;i++){
-        printf("BEFORECurr: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }
 
-    printf("\ns: %i -- e: %i\n", start, end);
+    printf("\ns: %i -- e: %i, r:%i\n", start, end, rank);
     
     // send/recv halo cells, 
     if (rank != numprocs-1) { // for leftmost process
@@ -206,7 +197,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     req_count = 4;
     if(rank == 0 || rank == numprocs-1) req_count -= 2;
     printf("\ncount: %i, rank: %i\n", req_count, rank);
-    MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
+    MPI_Waitall(0, reqs, MPI_STATUS_IGNORE);
 
     next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
     next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
