@@ -101,7 +101,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             MPI_Isend(&current_array, 1, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
-            double *buffer_array; // buffer to store received array domains
+            double *buffer_array = malloc(i_max*sizeof(double)); // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
