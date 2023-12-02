@@ -179,25 +179,25 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     start = edges[rank][0];
     end = edges[rank][1];
 
+    current_array[start] = 15;
+    current_array[end] = 9;
+
     for (int i=0;i<i_max;i++){
         printf("BEFORECurr: %f  r: %i  i: %i  \n", current_array[i], rank, i);
     }
 
     printf("\ns: %i -- e: %i\n", start, end);
-    current_array[start] = 15;
-    current_array[end] = 9;
+    
     // send/recv halo cells, 
     if (rank != numprocs-1) {
         MPI_Isend((void *)&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
         MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
         req_count += 2*(numprocs-2);
-        printf("\nr: %f with rank %i\n", right, rank);
     } else {right = 0;} // edge of array is always 0
     if(rank != 0) {
         MPI_Isend((void*)&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
         MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
         req_count += 2*(numprocs-2);
-        printf("\nl :%f with rank %i\n", left, rank);
     } else {left = 0;} // edge of array is always 0
     
     // let computation run during communication
@@ -209,6 +209,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     
     // wait for comms and compute halo cells
     MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
+    if (rank != 0) {
+    printf("\nSent start: %f to %i\nReceived last index: %f from %i ", current_array[start],rank-1,left,rank-1); }
+    if (rank != numprocs-1) {
+        printf("\nSent end: %f to %i\nReceived first index: %f from %i ", current_array[end],rank+1,right,rank+1);
+    }
     next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
     next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
