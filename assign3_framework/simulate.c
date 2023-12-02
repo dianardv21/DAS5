@@ -212,9 +212,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // wait for comms and compute halo cells
     MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
     if (rank != 0) {
-    printf("\nSent start: %f to %i\nReceived last index: %f from %i\n ", current_array[start],rank-1,left,rank-1); }
+        //printf("\nSent start: %f to %i\nReceived last index: %f from %i\n ", current_array[start],rank-1,left,rank-1); }
     if (rank != numprocs-1) {
-        printf("\nSent end: %f to %i\nReceived first index: %f from %i\n ", current_array[end],rank+1,right,rank+1);
+        //printf("\nSent end: %f to %i\nReceived first index: %f from %i\n ", current_array[end],rank+1,right,rank+1);
     }
     next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
     next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
