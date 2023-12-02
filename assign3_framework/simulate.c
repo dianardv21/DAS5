@@ -203,7 +203,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // wait for comms and compute halo cells
-    req_count = 2*numprocs - 2;
+    req_count = 4;
+    if(rank == 0 || rank == numprocs-1) req_count -= 2;
     printf("\ncount: %i, rank: %i\n", req_count, rank);
     MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
 
