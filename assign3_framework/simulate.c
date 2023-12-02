@@ -147,6 +147,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     // handles for comms
     int req = 4;
+    int req_count = 0;
     if(rank == 0 || rank == numprocs-1) {req = 2}
     MPI_Request reqs[5];
     MPI_Status stats[5];
