@@ -225,14 +225,14 @@ double *simulate(const int i_max, const int t_max, double *old_array,
    //next_array = temp;
 
     
-    if(rank == 1){
-        for (int i=0;i<i_max;i++){
-        printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }}
-    if(rank == 0){
-        for (int i=0;i<i_max;i++){
-        printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    }}
+    //if(rank == 1){
+    //    for (int i=0;i<i_max;i++){
+    //    printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    //}}
+    //if(rank == 0){
+    //    for (int i=0;i<i_max;i++){
+    //    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
+    //}}
 
     
 
