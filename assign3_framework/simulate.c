@@ -107,10 +107,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 start = edges[i][0];
                 end = edges[i][1];
                 printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
-
+                
                 // receive current_array from other processes
                 MPI_Recv(&buffer_array, 1, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
-
+                for (int i = 0; i<i_max;i++){
+                    printf("%f\n", buffer_array[i]);
+                }
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
