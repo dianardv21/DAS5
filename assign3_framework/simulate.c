@@ -101,7 +101,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             double send_array[i_max];
             memcpy(send_array, current_array, i_max*sizeof(double));
             for (int j = 0; j<i_max;j++){
-                    printf("%f\n", send_array[i]);
+                    printf("%f\n", send_array[j]);
                 }
             MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
@@ -116,7 +116,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 // receive current_array from other processes
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
                 for (int j = 0; j<i_max;j++){
-                    printf("%f\n", buffer_array[i]);
+                    printf("%f\n", buffer_array[j]);
                 }
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
