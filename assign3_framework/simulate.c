@@ -111,7 +111,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
 
     if(rank == 0) {
         for (int i=0;i<i_max;i++){
-            printf("", current_array[i]);
+            printf("%f   %i\n", current_array[i], i);
         }
     }
 
