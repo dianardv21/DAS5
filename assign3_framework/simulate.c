@@ -87,24 +87,23 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
 
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
-            // send all current_arrays to master process
-            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[5]);
+            // send current to master no need for non-blocking here
+            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
+                // blocking receive data chunk, otherwise buffer_array gets overwritten
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[1]);
+                
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
-                printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
                 
-                // receive current_array from other processes
-                MPI_Irecv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &reqs[5]);
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
-        
     }
 
 return current_array;
@@ -158,32 +157,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     start = edges[rank][0];
     end = edges[rank][1];
 
-    if (numprocs > 1) { // no comms necessary if only one process
-        if(rank != 0) {
-            // send current to master no need for non-blocking here
-            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
-        }
-        else {
-            double buffer_array[i_max]; // buffer to store received array domains
-            for (int i = 1; i < numprocs; i++) {
-                // blocking receive data chunk, otherwise buffer_array gets overwritten
-                printf("\n%i %i\n\n", i, numprocs);
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[1]);
-                
-                // for each non-master process get domain and copy only its domain to current_array
-                start = edges[i][0];
-                end = edges[i][1];
-                
-                printf("\n\n\n%i -> %i    i: %i\n", start, end, i);
-                for (int j=0;j<i_max;j++){
-                    printf("%f   %i\n", buffer_array[j], j);
-                }
-                
-                // copy relevant part of buffer to relevant part of current_array
-                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
-            }
-        }
-    }
+    
 
     if(rank == 0) {
         printf("\n\n\n");
