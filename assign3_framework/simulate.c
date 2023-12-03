@@ -53,15 +53,14 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
     for(int t = 0; t < t_max; t++) {
         
         // send/recv halo cells, 
-        if (rank != numprocs-1) {
-            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[0]); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[1]); // get start from next as end+1
-            req_count += 2*(numprocs-2);
+        if (rank != numprocs-1) { // exclude rightmost process
+            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[req_count++]); // get start from next as end+1
         } else {right = 0;} // edge of array is always 0
-        if(rank != 0) {
-            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[2]); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[3]); // get end from previous as start-1
-            req_count += 2*(numprocs-2);
+
+        if (rank != 0) { // exclude leftmost process
+            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[req_count++]); // get end from previous as start-1
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
@@ -72,7 +71,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         }
         
         // wait for comms and compute halo cells
-        MPI_Waitall(req_count, reqs, MPI_STATUS_IGNORE);
+        MPI_Waitall(req_count, reqs, stats);
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
@@ -81,8 +80,6 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         old_array = current_array;
         current_array = next_array;
         next_array = temp;
-
-        // receive always turns the value t0 0.000000
 
     }
    
@@ -93,10 +90,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
             // send all current_arrays to master process
             double send_array[i_max];
             memcpy(send_array, current_array, i_max*sizeof(double));
-            for (int j = 0; j<i_max;j++){
-                    printf("send: %f, curr: %f\n", send_array[j], current_array[j]);
-            }
-            MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+            MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[5]);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
@@ -107,15 +101,18 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
                 printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
                 
                 // receive current_array from other processes
-                MPI_Recv(buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
-                for (int j = 0; j<i_max;j++){
-                    printf("curr: %f, buff: %f\n", current_array[j],buffer_array[j]);
-                }
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
         
+    }
+
+    if(rank == 0) {
+        for (int i=0;i<i_max;i++){
+            printf("", current_array[i]);
+        }
     }
 
 return current_array;
@@ -167,53 +164,36 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // determine process domain
     start = edges[rank][0];
     end = edges[rank][1];
-
-    current_array[start] = 15;
-    current_array[end] = 9;   
     
-
-    printf("\ns: %i -- e: %i, r:%i\n", start, end, rank);
-    
-    // send/recv halo cells, 
-    if (rank != numprocs-1) { // exclude rightmost process
-        MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
-        MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[req_count++]); // get start from next as end+1
-    } else {right = 0;} // edge of array is always 0
-
-    if (rank != 0) { // exclude leftmost process
-        MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
-        MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[req_count++]); // get end from previous as start-1
-    } else {left = 0;} // edge of array is always 0
-    
-    // let computation run during communication
-    for(int i = start+1; i < end; i++) {
+    if (numprocs > 1) { // no comms necessary if only one process
+        if(rank != 0) {
+            // send all current_arrays to master process
+            double send_array[i_max];
+            memcpy(send_array, current_array, i_max*sizeof(double));
+            for (int j = 0; j<i_max;j++){
+                    printf("send: %f, curr: %f\n", send_array[j], current_array[j]);
+            }
+            MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+        }
+        else {
+            double buffer_array[i_max]; // buffer to store received array domains
+            for (int i = 1; i < numprocs; i++) {
+                // for each non-master process get domain and copy only its domain to current_array
+                start = edges[i][0];
+                end = edges[i][1];
+                printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
+                
+                // receive current_array from other processes
+                MPI_Recv(buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
+                for (int j = 0; j<i_max;j++){
+                    printf("curr: %f, buff: %f\n", current_array[j],buffer_array[j]);
+                }
+                // copy relevant part of buffer to relevant part of current_array
+                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
+            }
+        }
         
-        next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
-
     }
-    
-    // wait for comms and compute halo cells
-    MPI_Waitall(req_count, reqs, stats);
-    printf("\nrank:%i, left:%f, right:%f, req:%i\n",rank, left, right, req_count);
-
-    next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-    next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
-
-   //double *temp = old_array;
-   //old_array = current_array;
-   //current_array = next_array;
-   //next_array = temp;
-
-    
-    //if(rank == 1){
-    //    for (int i=0;i<i_max;i++){
-    //    printf("CURSADR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    //}}
-    //if(rank == 0){
-    //    for (int i=0;i<i_max;i++){
-    //    printf("CURR: %f  r: %i  i: %i  \n", current_array[i], rank, i);
-    //}}
-
     
 
 MPI_Finalize();
