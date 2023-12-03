@@ -4,7 +4,7 @@
 #include <mpi.h>
 #include <string.h>
 
-#include <windows.h> // for sleep()
+#include <unistd.h> // for sleep()
 
 /* Add any global variables you may need. */
 
