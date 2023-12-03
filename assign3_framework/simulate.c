@@ -49,7 +49,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     end = edges[rank][1];
 
     // start iterations
-    for(int t = 0; t < t_max; t++) {
+    for(int t = 0; t < t_max+1; t++) {
         
         req_count = 0; // reset counting
 
@@ -65,7 +65,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
-        for(int i = start+1; i < end; i++) {
+        for(int i = start; i < end; i++) {
             
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
@@ -73,9 +73,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         
         // wait for comms and compute halo cells
         MPI_Waitall(req_count, reqs, stats);
-        if(rank == 0) {left = current_array[start-1];}
-        if(rank == numprocs -1) {right = current_array[end+1]; printf("%f", current_array[end+1]);}
-        
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
         next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
