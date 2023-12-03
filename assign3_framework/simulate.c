@@ -84,7 +84,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
    
 
-
+    // collect results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send current to master no need for non-blocking here
@@ -106,8 +106,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
     }
 
-return current_array;
 MPI_Finalize();
+return current_array;
     
 }
 
