@@ -103,6 +103,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
                 end = edges[i][1];
                 
                 // copy relevant part of buffer to relevant part of current_array
+                printf("s:%i, e:%i\n", start, end);
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
