@@ -40,6 +40,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         if (mod) {end++; mod--;} // distribute remainder over chunks
         edges[k][0] = start;
         edges[k][1] = end;
+        printf("\nSTART:%i, END:%i\n", edges[k][0], edges[k][1]);
         start = end + 1;
     }
     
@@ -49,7 +50,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     end = edges[rank][1];
 
     // start iterations
-    for(int t = 0; t < t_max+1; t++) {
+    for(int t = 0; t < t_max; t++) {
         
         req_count = 0; // reset counting
 
