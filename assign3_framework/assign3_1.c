@@ -126,7 +126,10 @@ int main(int argc, char *argv[])
     }
 
     timer_start();
-
+    for(int p =0; p<i_max; p++){
+        old[p] = p+2;
+        current[p] = p+2;
+    }
     /* Call the actual simulation that should be implemented in simulate.c. */
     ret = simulate(i_max, t_max, old, current, next);
 
