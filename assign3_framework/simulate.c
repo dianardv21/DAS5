@@ -204,7 +204,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send current to master no need for non-blocking here
-            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
+            MPI_Ssend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
@@ -219,7 +219,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 // copy relevant part of buffer to relevant part of current_array
                 printf("s:%i, e:%i\n", start, end);
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
-                sleep(1);
             }
         }
     }
