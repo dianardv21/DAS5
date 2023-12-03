@@ -127,9 +127,6 @@ MPI_Finalize();
 double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
-    for (int i=0;i<i_max;i++){
-            printf("%f   %i\n", current_array[i], i);
-    }
 
     int numprocs, rank;
     double c = 0.15;
@@ -176,10 +173,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 
                 // receive current_array from other processes
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
+                printf("\n\n\n%i -> %i    i: %i\n", start, end, i);
                 for (int j=0;j<i_max;j++){
                     printf("%f   %i\n", buffer_array[j], j);
                 }
-                printf("\n%i -> %i    i: %i\n", start, end, i);
+                
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
@@ -187,6 +185,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         
     }
 
+    printf("\n\n\n");
     if(rank == 0) {
         for (int i=0;i<i_max;i++){
             printf("%f   %i\n", current_array[i], i);
