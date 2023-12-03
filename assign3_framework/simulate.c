@@ -88,9 +88,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send all current_arrays to master process
-            double send_array[i_max];
-            memcpy(send_array, current_array, i_max*sizeof(double));
-            MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[5]);
+            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[5]);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
@@ -113,6 +111,10 @@ return current_array;
 MPI_Finalize();
     
 }
+
+// Hoeveel MPI request en stats moet ik aanmaken?
+// Wat is de bedoeling van statuses en wat kan er misgaan met MPI_STATUS_IGNORE
+// 
 
 
 
@@ -159,13 +161,13 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send current to master no need for non-blocking here
-            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank+1, MPI_COMM_WORLD);
+            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i+1, MPI_COMM_WORLD, &stats[1]);
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[1]);
                 
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
