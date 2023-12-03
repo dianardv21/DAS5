@@ -180,7 +180,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 }
                 
                 // copy relevant part of buffer to relevant part of current_array
-                memcpy(current_array + i, buffer_array + 3, 1*sizeof(double));
+                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
     }
