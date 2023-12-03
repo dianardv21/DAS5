@@ -165,7 +165,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             double buffer_array[i_max]; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
                 // Receive all data chunks concurrently
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &reqs[0]);
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[0]);
                 // wait for current
                 MPI_Wait(&reqs[1], MPI_STATUS_IGNORE);
                 // for each non-master process get domain and copy only its domain to current_array
