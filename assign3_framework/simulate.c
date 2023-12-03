@@ -101,7 +101,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
                 printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
                 
                 // receive current_array from other processes
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
+                MPI_Irecv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &reqs[5]);
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
@@ -155,22 +155,23 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // determine process domain for copying
     start = edges[rank][0];
     end = edges[rank][1];
-    
+    int req_count = 0
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
-            // send all current_arrays to master process
-            printf("%f %i MUUH\n", current_array[3], rank);
-            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+            // send current to master no need for non-blocking here
+            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
+                // Receive all data chunks concurrently
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &reqs[0]);
+                // wait for current
+                MPI_Wait(&reqs[1], MPI_STATUS_IGNORE);
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
                 
-                // receive current_array from other processes
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
                 printf("\n\n\n%i -> %i    i: %i\n", start, end, i);
                 for (int j=0;j<i_max;j++){
                     printf("%f   %i\n", buffer_array[j], j);
@@ -179,6 +180,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(&current_array + i, buffer_array + 3, 1*sizeof(double));
             }
+                
+            
         }
         
     }
