@@ -109,12 +109,6 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         
     }
 
-    if(rank == 0) {
-        for (int i=0;i<i_max;i++){
-            printf("%f   %i\n", current_array[i], i);
-        }
-    }
-
 return current_array;
 MPI_Finalize();
     
@@ -161,7 +155,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         start = end + 1;
     }
 
-    // determine process domain
+    // determine process domain for copying
     start = edges[rank][0];
     end = edges[rank][1];
     
@@ -170,10 +164,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             // send all current_arrays to master process
             double send_array[i_max];
             memcpy(send_array, current_array, i_max*sizeof(double));
-            for (int j = 0; j<i_max;j++){
-                    printf("send: %f, curr: %f\n", send_array[j], current_array[j]);
-            }
-            MPI_Isend(send_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+            MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
@@ -184,15 +175,18 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 printf("\nstart: %i,  end: %i, rank: %i\n", start, end, rank);
                 
                 // receive current_array from other processes
-                MPI_Recv(buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
-                for (int j = 0; j<i_max;j++){
-                    printf("curr: %f, buff: %f\n", current_array[j],buffer_array[j]);
-                }
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i,  i, MPI_COMM_WORLD, &stats[5]);
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
         
+    }
+
+    if(rank == 0) {
+        for (int i=0;i<i_max;i++){
+            printf("%f   %i\n", current_array[i], i);
+        }
     }
     
 
