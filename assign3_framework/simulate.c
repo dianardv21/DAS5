@@ -159,6 +159,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send all current_arrays to master process
+            printf("%f %i MUUH\n", current_array[3], rank);
             MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
@@ -182,8 +183,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         
     }
 
-    printf("\n\n\n");
     if(rank == 0) {
+        printf("\n\n\n");
         for (int i=0;i<i_max;i++){
             printf("%f   %i\n", current_array[i], i);
         }
