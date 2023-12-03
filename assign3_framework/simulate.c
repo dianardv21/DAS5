@@ -65,7 +65,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         } else {left = 0;} // edge of array is always 0
         
         // let computation run during communication
-        for(int i = start; i < end; i++) {
+        for(int i = start+1; i < end; i++) {
             
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
