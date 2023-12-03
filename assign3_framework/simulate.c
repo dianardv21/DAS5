@@ -13,7 +13,7 @@
  * current_array: array of size i_max filled with data for t
  * next_array: array of size i_max. You should fill this with t+1
  */
-double *simulate1(const int i_max, const int t_max, double *old_array,
+double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
@@ -96,7 +96,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[1]);
                 
-                // for each non-master process get domain and copy only its domain to current_array
+                // for each non-master process get domain and copy only its computed domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
                 
@@ -114,60 +114,3 @@ MPI_Finalize();
 // Hoeveel MPI request en stats moet ik aanmaken?
 // Wat is de bedoeling van statuses en wat kan er misgaan met MPI_STATUS_IGNORE
 // 
-
-
-
-
-
-
-
-
-
-
-
-double *simulate(const int i_max, const int t_max, double *old_array,
-        double *current_array, double *next_array)
-{    
-
-    int numprocs, rank;
-
-    MPI_Init(NULL,NULL);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    // handles for comms
-    MPI_Request reqs[6];
-    MPI_Status stats[6];
-
-    // partition for start-end indices
-    int start = 1, end;
-    int jump = (i_max-2) / numprocs;
-    int mod = (i_max-2) % numprocs;
-    int edges[numprocs][2];
-
-    for (int k = 0; k < numprocs; k++) {
-        end = start + jump - 1;
-        if (mod) {end++; mod--;}
-        edges[k][0] = start;
-        edges[k][1] = end;
-        start = end + 1;
-    }
-
-    // determine process domain for copying
-    start = edges[rank][0];
-    end = edges[rank][1];
-
-    
-
-    if(rank == 0) {
-        printf("\n\n\n");
-        for (int i=0;i<i_max;i++){
-            printf("%f   %i\n", current_array[i], i);
-        }
-    }
-    
-
-MPI_Finalize();
-return current_array;
-    
-}
