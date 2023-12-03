@@ -146,11 +146,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // handles for comms
-    int req = 4;
     int req_count = 0;
-    if(rank == 0 || rank == numprocs-1) {req = 2;}
-    MPI_Request reqs[req];
-    MPI_Status stats[req];
+    MPI_Request reqs[6];
+    MPI_Status stats[6];
 
     // partition for start-end indices
     int start = 1, end;
@@ -199,10 +197,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     }
     
     // wait for comms and compute halo cells
-    //req_count = 4;
-    //if (rank == 0 || rank == numprocs-1) {req_count = 2;}
-
-    MPI_Waitall(req, reqs, stats);
+    req_count = 2;
+    if (rank == 0 || rank == numprocs-1) {req_count = 1;}
+    MPI_Waitall(req_count, reqs, stats);
     printf("\nrank:%i, left:%f, right:%f, req:%i\n",rank, left, right, req_count);
 
     next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
