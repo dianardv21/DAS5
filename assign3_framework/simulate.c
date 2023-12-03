@@ -157,11 +157,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // determine process domain for copying
     start = edges[rank][0];
     end = edges[rank][1];
-    int req_count = 0;
+
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send current to master no need for non-blocking here
-            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
+            MPI_Ssend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
