@@ -48,7 +48,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     edges[numprocs-1][1] -= 2;
     start = edges[rank][0];
     end = edges[rank][1];
-
+    printf("\nSTART:%i, END:%i\n", start, end);
     // start iterations
     for(int t = 0; t < t_max; t++) {
         
