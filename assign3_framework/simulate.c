@@ -17,10 +17,9 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
-    int numprocs, rank;
+    int numprocs, rank, req_count;
     double c = 0.15;
     double left, right; // halos
-    int req_count = 0;
 
     // handles for comms
     MPI_Request reqs[6];
@@ -52,6 +51,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
     // start iterations
     for(int t = 0; t < t_max; t++) {
         
+        req_count = 0; // reset counting
+
         // send/recv halo cells, 
         if (rank != numprocs-1) { // exclude rightmost process
             MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
