@@ -165,16 +165,16 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             double buffer_array[i_max]; // buffer to store received array domains
             for (int i = 1; i < numprocs; i++) {
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, MPI_ANY_SOURCE,  i, MPI_COMM_WORLD, &stats[1]);
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i+1,  i, MPI_COMM_WORLD, &stats[1]);
                 
                 // for each non-master process get domain and copy only its domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
                 
-                printf("\n\n\n%i -> %i    i: %i\n", start, end, i);
-                for (int j=0;j<i_max;j++){
-                    printf("%f   %i\n", buffer_array[j], j);
-                }
+                //printf("\n\n\n%i -> %i    i: %i\n", start, end, i);
+                //for (int j=0;j<i_max;j++){
+                //    printf("%f   %i\n", buffer_array[j], j);
+                //}
                 
                 // copy relevant part of buffer to relevant part of current_array
                 memcpy(&current_array + i, buffer_array + 3, 1*sizeof(double));
