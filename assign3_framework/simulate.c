@@ -160,7 +160,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         if(rank != 0) {
             // send all current_arrays to master process
             printf("%f %i MUUH\n", current_array[3], rank);
-            MPI_Isend(&current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
+            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[4]);
         }
         else {
             double buffer_array[i_max]; // buffer to store received array domains
