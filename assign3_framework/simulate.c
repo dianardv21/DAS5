@@ -129,15 +129,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 {    
 
     int numprocs, rank;
-    double c = 0.15;
-    double left, right; // halos
 
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     // handles for comms
-    int req_count = 0;
     MPI_Request reqs[6];
     MPI_Status stats[6];
 
@@ -179,7 +176,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 }
                 
                 // copy relevant part of buffer to relevant part of current_array
-                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
+                memcpy(current_array + i, buffer_array + 3, 1*sizeof(double));
             }
         }
         
