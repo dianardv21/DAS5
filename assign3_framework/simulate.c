@@ -183,7 +183,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             MPI_Recv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);
         } else {left = 0;}
         if (rank != numprocs-1){
-            MPI_Recv(&right, 1, MPI_DOUBLE, rank+1, rank+!, MPI_COMM_WORLD, &stats[2]);
+            MPI_Recv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]);
         } else {right = 0;} 
         
         next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
