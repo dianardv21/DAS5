@@ -87,7 +87,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     }
    
-
+    
     // collect results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
@@ -95,7 +95,8 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
         else { // if root, collect and aggregate all data
-            double buffer_array[i_max]; // buffer to store received array domains
+            // buffer to store received array domains
+            double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
