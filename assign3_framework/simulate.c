@@ -86,18 +86,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array = temp;
 
     }
-    start = edges[rank][0];
-    end = edges[rank][1];
-    printf("\n%i %i\n", start,end);
-    for (int k = start; k<end+1; k++) {
-        printf("\ncurr: %f,    i: %i, r:%i\n", current_array[k], k, rank);
-    }
 
-    // collect results from other processes
+    // collects results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
             // send current to master/root
-            MPI_Send(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);//, &reqs[1]);
+            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
         else { // if root, collect and aggregate all data
             // buffer to store received array domains
