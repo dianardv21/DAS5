@@ -8,6 +8,7 @@
 // int root , // IN : root process ( sender )
 // MPI_Comm communicator // IN : commuicator
 
+// Taking inspiration from https://hpc-tutorials.llnl.gov/mpi/non_blocking/
 
 // What it gotta do: 
 // The function should implement broadcast communication by means of point-to-point communication.
@@ -31,38 +32,42 @@
 // -> IDEA!!: root passes msg to both prev and next nodes => find index where we stop sending
 
 int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm communicator){
-    MPI_Request reqs[size???];   // required variable for non-blocking calls
-    MPI_Status stats[4];
+    int size, rank, next, prev;
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    MPI_Request reqs[size];  
+    MPI_Status stats[size]; 
 
     //Finding the left and right neighbours:
-    prev = rank-1;
-    next = rank+1;
+    prev = rank - 1;
+    next = rank + 1;
     if (rank == 0)
-        prev = size??? - 1; // i dont have size
+        prev = size - 1;
     if (rank ==  (size - 1))
         next = 0;
-
     // Sending the messages:
     if (rank == root){
-        MPI_Isend(&buffer, count, datatype, next, tag1, communicator, &);
+        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqs[rank]);
 
     }
-    else if (rank != ){
-        MPI_Recv
+    else{
+        MPI_Recv(buffer, count, datatype, rank, 1, communicator, &stats[rank]);
+        if(next != root)
+            MPI_Isend(&buffer, count, datatype, next, 1, communicator, &reqs[rank]);
     }
+    return MPI_SUCCESS;
 }
 
 
 
 main(int argc, char *argv[]){
-    int size, rank, next, prev, buf[2];
     rc = MPI_Init(&argc, &argv);
     if(rc != MPI_SUCCESS){
         printf(“Unable to set up MPI \n”);
         MPI_Abort(MPI_COMM_WORLD, rc);
     }
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
 
