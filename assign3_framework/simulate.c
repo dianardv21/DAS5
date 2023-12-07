@@ -276,8 +276,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
-        
-        req_count = 0; // reset counting
 
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
