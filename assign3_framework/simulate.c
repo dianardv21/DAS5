@@ -99,7 +99,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
             double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD);//, &stats[5]);
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
                 
                 // for each non-master process get domain and copy only its computed domain to current_array
                 start = edges[i][0];
