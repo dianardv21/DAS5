@@ -244,7 +244,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     int numprocs, rank;
     double c = 0.15;
-    double left, right; // halos
 
     // handles for comms
     MPI_Request reqs[6];
@@ -279,12 +278,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         if (rank != 0) { // exclude leftmost process
             MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
             MPI_Recv(&current_array[start-1], 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
-        } else {left = 0;} // edge of array is always 0
-
+        }
         if (rank != numprocs-1) { // exclude rightmost process
             MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
             MPI_Recv(&current_array[end+1], 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
-        } else {right = 0;} // edge of array is always 0
+        }
 
         // compute halo cells
         //next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
