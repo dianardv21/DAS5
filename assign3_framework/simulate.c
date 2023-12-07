@@ -119,7 +119,10 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
     }
 
-
+if (rank != 0 ) {
+    MPI_Finalize();    
+    return NULL;
+}
 
 MPI_Finalize();
 return current_array;
