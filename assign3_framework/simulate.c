@@ -86,7 +86,11 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array = temp;
 
     }
-   
+    start = edges[rank][0];
+    end = edges[rank][1];
+    for (int k = start; k<end+1; k++) {
+        printf("\ncurr: %f,    i: %i\n", current_array[k], k);
+    }
     
     // collect results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
