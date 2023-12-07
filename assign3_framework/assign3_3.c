@@ -37,8 +37,8 @@ int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_C
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    MPI_Request reqs[size];   // required variable for non-blocking calls
-    MPI_Status stats[size]; // i dont have size as a parameter
+    MPI_Request reqs[size];  
+    MPI_Status stats[size]; 
 
     //Finding the left and right neighbours:
     prev = rank - 1;
