@@ -15,7 +15,7 @@
  * current_array: array of size i_max filled with data for t
  * next_array: array of size i_max. You should fill this with t+1
  */
-double *simulate(const int i_max, const int t_max, double *old_array,
+double *simulate1(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
@@ -128,7 +128,7 @@ return current_array;
 // %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
 // %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate1(const int i_max, const int t_max, double *old_array,
+double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
@@ -204,29 +204,29 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
 
     }
    
-
-    // collect results from other processes
+    // collects results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
-            // send current to master no need for non-blocking here
-            MPI_Ssend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD);
+            // send current to master/root
+            MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
-        else {
-            double buffer_array[i_max]; // buffer to store received array domains
+        else { // if root, collect and aggregate all data
+            // buffer to store received array domains
+            double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
                 // blocking receive data chunk, otherwise buffer_array gets overwritten
-                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[1]);
+                MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
                 
                 // for each non-master process get domain and copy only its computed domain to current_array
                 start = edges[i][0];
                 end = edges[i][1];
                 
                 // copy relevant part of buffer to relevant part of current_array
-                printf("s:%i, e:%i\n", start, end);
                 memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
     }
+    
 // only root returns current_array
 if (rank != 0 ) {
     MPI_Finalize();    
