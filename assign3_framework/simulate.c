@@ -111,10 +111,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
                 end = edges[i][1];
                 
                 // copy relevant part of buffer to relevant part of current_array
-                //memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
-                for (int p = start; p < end+1;p++){
-                    current_array[p] = buffer_array[p];
-                }
+                memcpy(current_array + start, buffer_array + start, (end-start+1)*sizeof(double));
             }
         }
     }
@@ -236,6 +233,11 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
             }
         }
     }
+// only root returns current_array
+if (rank != 0 ) {
+    MPI_Finalize();    
+    return NULL;
+}
 
 MPI_Finalize();
 return current_array;
