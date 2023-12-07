@@ -129,7 +129,7 @@ double *simulate2(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
-    int numprocs, rank, req_count;
+    int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
 
@@ -166,11 +166,11 @@ double *simulate2(const int i_max, const int t_max, double *old_array,
 
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
-            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
+            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[1]); // send start to previous as end+1
         } else {left = 0;} // edge of array is always 0
 
         if (rank != numprocs-1) { // exclude rightmost process
-            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
+            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[2]); // send end to next as start-1
         } else {right = 0;} // edge of array is always 0
 
         
@@ -244,7 +244,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
-    int numprocs, rank, req_count;
+    int numprocs, rank;
     double c = 0.15;
     double left, right; // halos
 
@@ -282,25 +282,25 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
             MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
-            MPI_Recv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
+            MPI_Recv(&current_array[start-1], 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
         } else {left = 0;} // edge of array is always 0
 
         if (rank != numprocs-1) { // exclude rightmost process
             MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
-            MPI_Recv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
+            MPI_Recv(&current_array[end+1], 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
         } else {right = 0;} // edge of array is always 0
 
+        // compute halo cells
+        //next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
+        //next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
         
-        // let computation run during communication
-        for(int i = start+1; i < end; i++) {
+        // compute data chunk
+        for(int i = start; i < end+1; i++) {
             
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
         }
-        
-        next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
         // swap locally
         double *temp = old_array;
