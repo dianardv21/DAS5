@@ -281,12 +281,12 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
-            MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
+            MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
             MPI_Recv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
         } else {left = 0;} // edge of array is always 0
 
         if (rank != numprocs-1) { // exclude rightmost process
-            MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
+            MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
             MPI_Recv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
         } else {right = 0;} // edge of array is always 0
 
