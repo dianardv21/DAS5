@@ -131,8 +131,9 @@ int main(int argc, char *argv[])
     time = timer_end();
     printf("Took %g seconds\n", time);
     printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
-
-    file_write_double_array("result.txt", ret, i_max);
+    if (ret) {
+        file_write_double_array("result.txt", ret, i_max);
+    }
 
     free(old);
     free(current);
