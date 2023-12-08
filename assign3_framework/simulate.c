@@ -14,8 +14,6 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
   
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking
-
-        printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication.\n Cheers ;) \n\n");
   
         return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
         //return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
@@ -32,7 +30,7 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
 double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
-
+    
     int numprocs, rank;
     double c = 0.15;
 
@@ -43,6 +41,10 @@ double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if (rank == 0) {
+          printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication.\n Cheers ;) \n\n");
+    }
 
     // partitioning for start-end indices
     int start = 1, end;
@@ -148,6 +150,10 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    if (rank == 0) {
+          printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication.\n Cheers ;) \n\n");
+    }
+  
     // partitioning for start-end indices
     int start = 1, end;
     int jump = (i_max-2) / numprocs;
@@ -263,6 +269,10 @@ double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array
     MPI_Init(NULL,NULL);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if (rank == 0) {
+          printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication.\n Cheers ;) \n\n");
+    }
 
     // partitioning for start-end indices
     int start = 1, end;
