@@ -4,13 +4,19 @@
 #include <mpi.h>
 #include <string.h>
 
+// predefine functions
+double *simulate_BLOCKING(i_max, t_max, old_array,current_array,next_array);
+double *simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
+double *simulate_NONBLOCKING(i_max, t_max, old_array,current_array,next_array);
+
+// wrapper for fast switching between implementation types
 double *simulate(const int i_max, const int t_max, double *old_array,
                  double *current_array, double *next_array) {
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking
-        return simulate_BLOCKING(i_max, t_max, old_array,current_array,next_array);
+        //return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
         //return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
-        //return simulate_NONBLOCKING(i_max, t_max, old_array,current_array,next_array);
+        //return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
 }
 
 
