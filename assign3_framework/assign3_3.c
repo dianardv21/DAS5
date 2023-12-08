@@ -54,10 +54,9 @@ int main(int argc, char *argv[]){
         MPI_Abort(MPI_COMM_WORLD, rc);
     }
 
-    int data = 767;
-    MYMPI_Bcast(&data, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    int test = 767;
+    MYMPI_Bcast(&test, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    
     MPI_Finalize();
 
     return 0;
