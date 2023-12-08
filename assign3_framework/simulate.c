@@ -10,8 +10,8 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
 double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
 
 // wrapper for fast switching between implementation types
-double *simulate(const int i_max, const int t_max, double *old_array,
-                 double *current_array, double *next_array) {
+double *simulate(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
+  
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking
   
@@ -42,7 +42,7 @@ double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // partition for start-end indices
+    // partitioning for start-end indices
     int start = 1, end;
     int jump = (i_max-2) / numprocs;
     int mod = (i_max-2) % numprocs;
@@ -72,17 +72,10 @@ double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
             MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
             MPI_Recv(&current_array[end+1], 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
         }
-
-        // compute halo cells
-        //next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        //next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
-        
-        
-        // compute data chunk
+      
+        // compute data chunk: halo-cells are already added to edges of data chunk
         for(int i = start; i < end+1; i++) {
-            
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
-
         }
 
         // swap locally
@@ -100,10 +93,10 @@ double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
             MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
         else { // if root, collect and aggregate all data
-            // buffer to store received array domains
+            // buffer to store received data chunks
             double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
-                // blocking receive data chunk, otherwise buffer_array gets overwritten
+                // blocking receive data chunk, otherwise buffer_array gets overwritten too fast
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
                 
                 // for each non-master process get domain and copy only its computed domain to current_array
@@ -153,7 +146,7 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // partition for start-end indices
+    // partitioning for start-end indices
     int start = 1, end;
     int jump = (i_max-2) / numprocs;
     int mod = (i_max-2) % numprocs;
@@ -185,11 +178,9 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
 
         
         
-        // let computation run during communication
+        // compute data chunk: edges of data chunk excluded for later computation
         for(int i = start+1; i < end; i++) {
-            
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
-
         }
         
         // wait for comms and compute halo cells
@@ -218,10 +209,10 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
             MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
         else { // if root, collect and aggregate all data
-            // buffer to store received array domains
+            // buffer to store received data chunks
             double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
-                // blocking receive data chunk, otherwise buffer_array gets overwritten
+                // blocking receive data chunk, otherwise buffer_array gets overwritten too fast
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
                 
                 // for each non-master process get domain and copy only its computed domain to current_array
@@ -271,7 +262,7 @@ double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    // partition for start-end indices
+    // partitioning for start-end indices
     int start = 1, end;
     int jump = (i_max-2) / numprocs;
     int mod = (i_max-2) % numprocs;
@@ -307,11 +298,9 @@ double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array
 
         
         
-        // let computation run during communication
+        // compute data chunk: edges of data chunk excluded for later computation
         for(int i = start+1; i < end; i++) {
-            
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
-
         }
         
         // wait for comms and compute halo cells
@@ -334,10 +323,10 @@ double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array
             MPI_Isend(current_array, i_max, MPI_DOUBLE, 0,  rank, MPI_COMM_WORLD, &reqs[1]);
         }
         else { // if root, collect and aggregate all data
-            // buffer to store received array domains
+            // buffer to store received data chunks
             double buffer_array[i_max];
             for (int i = 1; i < numprocs; i++) {
-                // blocking receive data chunk, otherwise buffer_array gets overwritten
+                // blocking receive data chunk, otherwise buffer_array gets overwritten too fast
                 MPI_Recv(&buffer_array, i_max, MPI_DOUBLE, i, i, MPI_COMM_WORLD, &stats[5]);
                 
                 // for each non-master process get domain and copy only its computed domain to current_array
