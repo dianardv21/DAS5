@@ -16,8 +16,8 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
         // DEFAULT: fully blocking
   
         //return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
-        return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
-        //return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
+        //return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
+        return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
 }
 
 
