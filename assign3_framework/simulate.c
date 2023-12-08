@@ -4,24 +4,28 @@
 #include <mpi.h>
 #include <string.h>
 
-#include <unistd.h> // for sleep()
+double *simulate(const int i_max, const int t_max, double *old_array,
+                 double *current_array, double *next_array) {
+        // alter commenting to choose implementation type
+        // DEFAULT: fully blocking
+        return simulate_BLOCKING(i_max, t_max, old_array,current_array,next_array);
+        //return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
+        //return simulate_NONBLOCKING(i_max, t_max, old_array,current_array,next_array);
+}
 
-/* Add any global variables you may need. */
 
-/*
- * i_max: how many data points are on a single wave
- * t_max: how many iterations the simulation should run
- * old_array: array of size i_max filled with data for t-1
- * current_array: array of size i_max filled with data for t
- * next_array: array of size i_max. You should fill this with t+1
- */
-double *simulate1(const int i_max, const int t_max, double *old_array,
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BLOCKING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+
+double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
-    int numprocs, rank, req_count;
+    int numprocs, rank;
     double c = 0.15;
-    double left, right; // halos
 
     // handles for comms
     MPI_Request reqs[6];
@@ -51,33 +55,28 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
-        
-        req_count = 0; // reset counting
 
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
-            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
-            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[req_count++]); // get end from previous as start-1
-        } else {left = 0;} // edge of array is always 0
-
+            MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
+            MPI_Recv(&current_array[start-1], 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
+        }
         if (rank != numprocs-1) { // exclude rightmost process
-            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
-            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[req_count++]); // get start from next as end+1
-        } else {right = 0;} // edge of array is always 0
+            MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
+            MPI_Recv(&current_array[end+1], 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
+        }
 
+        // compute halo cells
+        //next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
+        //next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
         
         
-        // let computation run during communication
-        for(int i = start+1; i < end; i++) {
+        // compute data chunk
+        for(int i = start; i < end+1; i++) {
             
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
         }
-        
-        // wait for comms and compute halo cells
-        MPI_Waitall(req_count, reqs, stats);
-        next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
         // swap locally
         double *temp = old_array;
@@ -86,7 +85,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         next_array = temp;
 
     }
-
+   
     // collects results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
@@ -110,6 +109,7 @@ double *simulate1(const int i_max, const int t_max, double *old_array,
         }
     }
 
+// only root returns current_array
 if (rank != 0 ) {
     MPI_Finalize();    
     return NULL;
@@ -120,12 +120,17 @@ return current_array;
     
 }
 
-// %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%% Blocking receive %%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate2(const int i_max, const int t_max, double *old_array,
+
+
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% HALFBLOCKING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+
+double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
@@ -233,17 +238,23 @@ return current_array;
     
 }
 
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%% All Blocking %%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%% All Blocking %%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%% All Blocking %%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-// %%%%%%%%%%%%%%%%%%%%%%%%%%%%% All Blocking %%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate(const int i_max, const int t_max, double *old_array,
+
+
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  NONBLOCKING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+
+double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array,
         double *current_array, double *next_array)
 {    
 
-    int numprocs, rank;
+    int numprocs, rank, req_count;
     double c = 0.15;
+    double left, right; // halos
 
     // handles for comms
     MPI_Request reqs[6];
@@ -273,28 +284,33 @@ double *simulate(const int i_max, const int t_max, double *old_array,
 
     // start iterations
     for(int t = 0; t < t_max; t++) {
+        
+        req_count = 0; // reset counting
 
         // send/recv halo cells
         if (rank != 0) { // exclude leftmost process
-            MPI_Send(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD); // send start to previous as end+1
-            MPI_Recv(&current_array[start-1], 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &stats[1]);  // receive end from previous as start-1
-        }
-        if (rank != numprocs-1) { // exclude rightmost process
-            MPI_Send(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD); // send end to next as start-1
-            MPI_Recv(&current_array[end+1], 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &stats[2]); // receive start from previous as end+1
-        }
+            MPI_Isend(&current_array[start], 1, MPI_DOUBLE, rank-1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send start to previous as end+1
+            MPI_Irecv(&left, 1, MPI_DOUBLE, rank-1, rank-1, MPI_COMM_WORLD, &reqs[req_count++]); // get end from previous as start-1
+        } else {left = 0;} // edge of array is always 0
 
-        // compute halo cells
-        //next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
-        //next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
+        if (rank != numprocs-1) { // exclude rightmost process
+            MPI_Isend(&current_array[end], 1, MPI_DOUBLE, rank+1,  rank, MPI_COMM_WORLD, &reqs[req_count++]); // send end to next as start-1
+            MPI_Irecv(&right, 1, MPI_DOUBLE, rank+1, rank+1, MPI_COMM_WORLD, &reqs[req_count++]); // get start from next as end+1
+        } else {right = 0;} // edge of array is always 0
+
         
         
-        // compute data chunk
-        for(int i = start; i < end+1; i++) {
+        // let computation run during communication
+        for(int i = start+1; i < end; i++) {
             
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
 
         }
+        
+        // wait for comms and compute halo cells
+        MPI_Waitall(req_count, reqs, stats);
+        next_array[start] = 2*current_array[start]-old_array[start]+c*(left-(2*current_array[start]-current_array[start+1]));
+        next_array[end] = 2*current_array[end]-old_array[end]+c*(current_array[end-1]-(2*current_array[end]-right));
 
         // swap locally
         double *temp = old_array;
@@ -303,7 +319,7 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         next_array = temp;
 
     }
-   
+
     // collects results from other processes
     if (numprocs > 1) { // no comms necessary if only one process
         if(rank != 0) {
@@ -327,7 +343,6 @@ double *simulate(const int i_max, const int t_max, double *old_array,
         }
     }
 
-// only root returns current_array
 if (rank != 0 ) {
     MPI_Finalize();    
     return NULL;
