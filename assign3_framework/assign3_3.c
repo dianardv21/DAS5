@@ -36,7 +36,7 @@ int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_C
 
     }
     else{ // Every other node receives then sends to its next neighbour:
-        MPI_Irecv(buffer, count, datatype, rank, 1, communicator, &reqrec);
+        MPI_Irecv(buffer, count, datatype, prev, 1, communicator, &reqrec);
         MPI_Wait(&reqrec, &stat); // Make sure the data is received
         MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqsend);
     }
