@@ -1,4 +1,7 @@
-#include “mpi.h”
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "mpi.h"
 
 // MYMPI_Bcast function parameters:
 //
@@ -8,28 +11,8 @@
 // int root , // IN : root process ( sender )
 // MPI_Comm communicator // IN : commuicator
 
-// Taking inspiration from https://hpc-tutorials.llnl.gov/mpi/non_blocking/
+// Used lecture slides and https://hpc-tutorials.llnl.gov/mpi/non_blocking/
 
-// What it gotta do: 
-// The function should implement broadcast communication by means of point-to-point communication.
-// Each MPI process of the given communicator is assumed to execute the broadcast function with the
-// same message parameters and root process argument. The root process is supposed to send the
-// content of its own buffer to all other processes of the communicator. Any non-root process uses the
-// given buffer for receiving the corresponding data from the root process
-
-
-// For your implementation of broadcast assume a 1-dimensional
-// ring topology, where each node only has communication links with its two direct neighbours with
-// While any MPI process may, nonetheless, send
-// messages to any other MPI process, messages need to be routed through a number of intermediate
-// nodes. Communication cost can be assumed to be linear in the number of nodes involved. Aim for
-// an efficient implementation of your function on an (imaginary) ring network topology
-// (circularly) increasing and decreasing MPI process ids. 
-
-// -> prbably non roots have to wait first until the receive and then send
-// -> smth to check if msg was sent? if there was space for the buffer? or maybe not cuz we dont create
-// the buffer inside the function, we just pass it from main
-// -> IDEA!!: root passes msg to both prev and next nodes => find index where we stop sending
 
 int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm communicator){
     int size, rank, next, prev;
@@ -37,8 +20,8 @@ int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_C
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    MPI_Request reqs[size];  
-    MPI_Status stats[size]; 
+    MPI_Request reqsend, reqrec;  
+    MPI_Status stat; 
 
     //Finding the left and right neighbours:
     prev = rank - 1;
@@ -48,28 +31,34 @@ int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_C
     if (rank ==  (size - 1))
         next = 0;
     // Sending the messages:
-    if (rank == root){
-        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqs[rank]);
+    if (rank == root){ // Root just sends
+        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqsend);
 
     }
-    else{
-        MPI_Recv(buffer, count, datatype, rank, 1, communicator, &stats[rank]);
-        if(next != root)
-            MPI_Isend(&buffer, count, datatype, next, 1, communicator, &reqs[rank]);
+    else{ // Every other node receives then sends to its next neighbour:
+        MPI_Irecv(buffer, count, datatype, rank, 1, communicator, &reqrec);
+        MPI_Wait(&reqrec, &stat); // Make sure the data is received
+        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqsend);
     }
+
     return MPI_SUCCESS;
 }
 
 
 
-main(int argc, char *argv[]){
+int main(int argc, char *argv[]){
+    int rc;
     rc = MPI_Init(&argc, &argv);
-    if(rc != MPI_SUCCESS){
-        printf(“Unable to set up MPI \n”);
+    if (rc != MPI_SUCCESS) {
+        printf("Unable to set up MPI \n");
         MPI_Abort(MPI_COMM_WORLD, rc);
     }
 
+    int data = 767;
+    MYMPI_Bcast(&data, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-
+    
     MPI_Finalize();
+
+    return 0;
 }
