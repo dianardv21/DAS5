@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "mpi.h"
 
 // MYMPI_Bcast function parameters:
@@ -12,15 +11,14 @@
 // MPI_Comm communicator // IN : commuicator
 
 // Used lecture slides and https://hpc-tutorials.llnl.gov/mpi/non_blocking/ link from Canvas
-
+// => do clockwise and counter-clockwise implementation
 
 int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm communicator){
-    int size, rank, next, prev;
+    int size, rank, next, prev, last;
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    MPI_Request reqsend, reqrec;  
     MPI_Status stat; 
 
     //Finding the left and right neighbours:
@@ -32,22 +30,32 @@ int MYMPI_Bcast (void *buffer, int count, MPI_Datatype datatype, int root, MPI_C
     if (rank ==  (size - 1)){
         next = 0;
     }
+    //Finding last node that has to receive:
+    if (root == 0)
+        last = size - 1;
+    else last = (root-1);
 
+    //double start = MPI_Wtime();
     // Sending the messages:
     if (rank == root){ // Root just sends
-        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqsend);
+        MPI_Send(buffer, count, datatype, next, 1, communicator);
         printf("Node %d (root) started broadcasting. Message: %d\n", rank, *(int*)buffer);
     }
-    else{ // Every other node receives then sends to its next neighbour:
-        MPI_Irecv(buffer, count, datatype, prev, 1, communicator, &reqrec);
-        MPI_Wait(&reqrec, &stat); // Make sure the data is received
+    else if(rank == last){ //the last node just receives
+        MPI_Recv(buffer, count, datatype, prev, 1, communicator, &stat);     
         printf("Node %d received message %d\n", rank, *(int*)buffer);
 
-        MPI_Isend(buffer, count, datatype, next, 1, communicator, &reqsend);
-        MPI_Wait(&reqsend, &stat);
+    }
+    else{ // Every other node receives then sends to its right neighbour:
+        MPI_Recv(buffer, count, datatype, prev, 1, communicator, &stat);     
+        printf("Node %d received message %d\n", rank, *(int*)buffer);
+
+        MPI_Send(buffer, count, datatype, next, 1, communicator);
         printf("Node %d sent message\n", rank);
     }
 
+    //double end = MPI_Wtime();
+    //printf("The process %d took %f seconds to run.\n", rank, (end - start));
     return MPI_SUCCESS;
 }
 
