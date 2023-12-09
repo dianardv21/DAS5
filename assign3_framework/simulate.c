@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "simulate.h"
-//#include <mpi.h>
+#include <mpi.h>
 #include <string.h>
 
 // predefine functions
