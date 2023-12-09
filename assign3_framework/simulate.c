@@ -14,10 +14,11 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
   
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking 
-        
-        return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
+
+        // return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
         // return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
         // return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
+        return sequential           (i_max, t_max, old_array,current_array,next_array);
 }
 
 
@@ -27,8 +28,7 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array,
-        double *current_array, double *next_array)
+double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array)
 {    
     
     int numprocs, rank;
@@ -134,8 +134,7 @@ return current_array;
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_array,
-        double *current_array, double *next_array)
+double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array)
 {    
 
     int numprocs, rank;
@@ -254,8 +253,7 @@ return current_array;
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
 
-double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array,
-        double *current_array, double *next_array)
+double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array)
 {    
 
     int numprocs, rank, req_count;
@@ -359,4 +357,19 @@ if (rank != 0 ) {
 MPI_Finalize();
 return current_array;
     
+}
+
+double *sequential(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
+    
+    for(int t = 0; t<t_max; t++) {
+        for(int i = 1; i< i_max; i++) {
+            next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
+        }
+        double *temp = old_array;
+        old_array = current_array;
+        current_array = next_array;
+        next_array = temp;
+    }
+    
+    return current_array;
 }
