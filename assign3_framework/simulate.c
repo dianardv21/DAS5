@@ -10,14 +10,13 @@ double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_arra
 double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
 
 // wrapper for fast switching between implementation types
-double *simulate(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
+double *simulate(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array, int p) {
   
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking 
-  
-        return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
-        //return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
-        //return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
+        if (p == 1) return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
+        if (p == 2) return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
+      /*Else*/      return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
 }
 
 

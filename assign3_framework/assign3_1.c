@@ -125,10 +125,12 @@ int main(int argc, char *argv[])
         fill(current, 2, i_max/4, 0, 2*3.14, sin);
     }
 
+    int choice = atoi(argv[4])
     /* Call the actual simulation that should be implemented in simulate.c. */
-    ret = simulate(i_max, t_max, old, current, next);
+    ret = simulate(i_max, t_max, old, current, next, choice);
 
     time = timer_end();
+
     printf("Took %g seconds\n", time);
     printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
     if (ret) {
