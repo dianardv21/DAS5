@@ -49,7 +49,7 @@ void fill(double *array, int offset, int range, double sample_start,
 int main(int argc, char *argv[])
 {
     double *old, *current, *next, *ret;
-    int t_max, i_max, choice;
+    int t_max, i_max;
     double time;
 
     /* Parse commandline args */
