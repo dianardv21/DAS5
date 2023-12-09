@@ -128,13 +128,13 @@ int main(int argc, char *argv[])
     /* Call the actual simulation that should be implemented in simulate.c. */
     ret = simulate(i_max, t_max, old, current, next);
 
-    
-
+    // CHANGED THIS MYSELF
+    // Only returns root process' current_array and time
     if (ret) {
         file_write_double_array("result.txt", ret, i_max);
         time = timer_end();
-        printf("Took %g seconds\n", time);
-        printf("Normalized: %g seconds\n", time / (1. * i_max * t_max));
+        printf("Took %f seconds\n", time);
+        printf("Normalized: %f seconds\n", time / (1. * i_max * t_max));
     }
 
     free(old);
