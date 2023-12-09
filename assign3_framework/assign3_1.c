@@ -49,7 +49,7 @@ void fill(double *array, int offset, int range, double sample_start,
 int main(int argc, char *argv[])
 {
     double *old, *current, *next, *ret;
-    int t_max, i_max;
+    int t_max, i_max, choice;
     double time;
 
     /* Parse commandline args */
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
         fill(current, 2, i_max/4, 0, 2*3.14, sin);
     }
 
-    int choice = atoi(argv[4])
+    choice = atoi(argv[4]);
     /* Call the actual simulation that should be implemented in simulate.c. */
     ret = simulate(i_max, t_max, old, current, next, choice);
 
