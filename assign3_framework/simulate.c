@@ -8,6 +8,7 @@
 double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
 double *simulate_HALFBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
 double *simulate_NONBLOCKING(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
+double *sequential(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array);
 
 // wrapper for fast switching between implementation types
 double *simulate(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
