@@ -71,7 +71,12 @@ int main(int argc, char *argv[]){
         MPI_Abort(MPI_COMM_WORLD, rc);
     }
 
-    int test = 767;
+    if (argc != 2) {
+    printf("Args: %s <value>\n", argv[0]);
+    MPI_Abort(MPI_COMM_WORLD, MPI_ERR_ARG);
+    }
+
+    int test = atoi(argv[1]);
     MYMPI_Bcast(&test, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     MPI_Finalize();

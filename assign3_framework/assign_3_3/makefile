@@ -1,7 +1,8 @@
 PROGNAME = assign3_3
+SRCFILES = assign3_3.c
 TARNAME = assign3_3.tgz
 
-RUNARGS = 1000 1000 # i_max t_max, increase this when testing on the DAS4!
+RUNARGS = 46378 # For testing we implemented the function only for int inputs, but this can be easily adapted
 NODES = 1 # How many DAS4 nodes
 PROCESSESPERNODE = 4 # How many processes to spawn on one machine.
 
@@ -28,8 +29,10 @@ $(PROGNAME): $(OBJFILES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 run: $(PROGNAME)
-	prun $(PRUNARGS) $(PROGNAME)
+	prun $(PRUNARGS) $(PROGNAME) $(RUNARGS)
 
 runlocal: $(PROGNAME)
-	mpirun -n $(PROCESSESPERNODE) $(PROGNAME)
+	mpirun -n $(PROCESSESPERNODE) $(PROGNAME) $(RUNARGS)
+clean:
+	rm -fv $(PROGNAME) $(OBJFILES) $(TARNAME)
 
