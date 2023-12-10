@@ -28,8 +28,8 @@ $(PROGNAME): $(OBJFILES)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 run: $(PROGNAME)
-	prun $(PRUNARGS) $(PROGNAME) $(RUNARGS)
+	prun $(PRUNARGS) $(PROGNAME)
 
 runlocal: $(PROGNAME)
-	mpirun -n $(PROCESSESPERNODE) $(PROGNAME) $(RUNARGS)
+	mpirun -n $(PROCESSESPERNODE) $(PROGNAME)
 
