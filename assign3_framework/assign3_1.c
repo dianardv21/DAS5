@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 {
     double *old, *current, *next, *ret;
     int t_max, i_max;
+    double time;
 
     /* Parse commandline args */
     if (argc < 3) {
@@ -133,7 +134,6 @@ int main(int argc, char *argv[])
         exit(0);
     }
     else {
-        double time;
         file_write_double_array("result.txt", ret, i_max);
         time = timer_end();
         printf("Took %g seconds\n", time);
