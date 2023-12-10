@@ -18,7 +18,7 @@ typedef struct {// data to send to each thread
 pthread_mutex_t lock;
 pthread_barrier_t barrier;
 
-double *simulate(const int i_max, const int t_max, const int num_threads,
+double *simulate1(const int i_max, const int t_max, const int num_threads,
         		 double *old_array, double *current_array, double *next_array) 
 {
 	pthread_t *thd;
@@ -109,4 +109,23 @@ void *thread(void *vargp)
 	}
 	
     return NULL;
+}
+
+
+double *simulate(const int i_max, const int t_max, const int num_threads,
+        		 double *old_array, double *current_array, double *next_array)  {
+    double c = 0.15;
+    for(int t = 0; t < t_max; t++) {
+        
+        for(int i = 1; i < i_max-1; i++) {
+            next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
+        }
+        
+        double *temp = old_array;
+        old_array = current_array;
+        current_array = next_array;
+        next_array = temp;
+    }
+    
+    return current_array;
 }
