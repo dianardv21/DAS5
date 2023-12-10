@@ -361,20 +361,25 @@ else {
 
 }
 
+
+
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%% SEQUENTIAL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
+
 double *sequential(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
     double c = 0.15;
     for(int t = 0; t < t_max; t++) {
-        for(int i = 1; i < i_max+1; i++) {
+        for(int i = 0; i < i_max; i++) {
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
         }
-
-        memcpy(old_array, current_array, i_max * sizeof(double));
-      	memcpy(current_array, next_array, i_max * sizeof(double));
         
-        //double *temp = old_array;
-        //old_array = current_array;
-        //current_array = next_array;
-        //next_array = temp;
+        double *temp = old_array;
+        old_array = current_array;
+        current_array = next_array;
+        next_array = temp;
     }
     
     return current_array;
