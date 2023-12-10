@@ -2,7 +2,7 @@ PROGNAME = assign3_3
 TARNAME = assign3_3.tgz
 
 RUNARGS = 1000 1000 # i_max t_max, increase this when testing on the DAS4!
-NODES = 1 # How many DAS4 nodes
+NODES = 4 # How many DAS4 nodes
 PROCESSESPERNODE = 1 # How many processes to spawn on one machine.
 
 PRUNARGS = -v -np $(NODES) -$(PROCESSESPERNODE) \
