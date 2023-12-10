@@ -16,9 +16,9 @@ double *simulate(const int i_max, const int t_max, double *old_array, double *cu
         // alter commenting to choose implementation type
         // DEFAULT: fully blocking 
 
-        // return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
+        return simulate_BLOCKING    (i_max, t_max, old_array,current_array,next_array);
         // return simulate_HALFBLOCKING(i_max, t_max, old_array,current_array,next_array);
-        return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
+        // return simulate_NONBLOCKING (i_max, t_max, old_array,current_array,next_array);
         // return sequential           (i_max, t_max, old_array,current_array,next_array);
 }
 
@@ -372,7 +372,7 @@ else {
 double *sequential(const int i_max, const int t_max, double *old_array, double *current_array, double *next_array) {
     double c = 0.15;
     for(int t = 0; t < t_max; t++) {
-        
+
         for(int i = 1; i < i_max-1; i++) {
             next_array[i] = 2*current_array[i]-old_array[i]+c*(current_array[i-1]-(2*current_array[i]-current_array[i+1]));
         }
