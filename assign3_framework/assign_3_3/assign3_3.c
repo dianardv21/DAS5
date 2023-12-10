@@ -83,14 +83,3 @@ int main(int argc, char *argv[]){
 
     return 0;
 }
-
-// Node 0 (root) started broadcasting. Message: 767
-// Node 1 received message 767
-// Node 1 sent message
-// Node 2 received message 767
-// Node 2 sent message
-// The process 2 took 0.000082 seconds to run.
-// The process 1 took 0.000046 seconds to run.
-// The process 0 took 0.000049 seconds to run.
-// Node 3 received message 767
-// The process 3 took 0.000024 seconds to run.
