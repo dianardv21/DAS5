@@ -130,7 +130,10 @@ int main(int argc, char *argv[])
 
     // CHANGED THIS MYSELF
     // Only returns root process' current_array and timing
-    if (ret) {
+    if (!ret) {
+        exit(0);
+    }
+    else {
         file_write_double_array("result.txt", ret, i_max);
         time = timer_end();
         printf("Took %g seconds\n", time);
