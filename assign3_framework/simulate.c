@@ -44,7 +44,7 @@ double *simulate_BLOCKING(const int i_max, const int t_max, double *old_array, d
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     if (rank == 0) {
-          printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication.\n Cheers ;) \n\n");
+          printf("\n\n NOTE: the used implementation can be changed in the simulate.c file.\n DEFAULT: Fully blocking communication -> i_max:100, t_max:1000.\n Cheers ;) \n\n");
     }
 
     // partitioning for start-end indices
